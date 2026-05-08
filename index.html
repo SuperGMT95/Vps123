@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoreMMC - Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            /* CoreMMC Background GIF */
+            background: url('https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExamJlOHR5Y2Fod2s0ZWg2MzNuZzZqZXJjdTloeTJjZ2hrcTNpeTZ0ayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/skzEY0OczUGwhamSxk/giphy.gif');
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .login-card {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            color: white;
+        }
+
+        .logo {
+            width: 80px;
+            margin-bottom: 20px;
+            border-radius: 50%;
+            border: 2px solid #3b82f6;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .social-btn {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 600;
+            transition: 0.3s;
+            font-size: 15px;
+        }
+
+        .google-btn { background: white; color: #1e293b; }
+        .discord-btn { background: #5865F2; color: white; }
+
+        .social-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .divider {
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .divider::before, .divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #334155;
+            margin: 0 10px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid #334155;
+            border-radius: 10px;
+            color: white;
+            outline: none;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border: none;
+            color: white;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .footer-text { margin-top: 20px; font-size: 13px; }
+        .footer-text a { color: #3b82f6; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <img src="https://i.ibb.co/KzF67sFZ/copilot-image-1761965106943.png" alt="CoreMMC" class="logo">
+        
+        <h2>Welcome Back</h2>
+        <p style="margin-bottom:30px; color:#94a3b8;">Login to CoreMMC Hosting</p>
+
+        <button class="social-btn google-btn" onclick="googleLogin()">
+            <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="20"> Continue with Google
+        </button>
+
+        <button class="social-btn discord-btn" onclick="discordLogin()">
+            <i class="fab fa-discord"></i> Continue with Discord
+        </button>
+
+        <div class="divider">OR</div>
+
+        <input type="email" placeholder="Email Address">
+        <input type="password" placeholder="Password">
+        
+        <button class="login-btn">Log In</button>
+
+        <div class="footer-text">
+            Don't have an account? <a href="#">Create One</a>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+
+    <script>
+        // Aapka screenshot wala asli config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDNwc4Ktuq-v5VX1ezzCNfK_sJmbFs2_x0",
+            authDomain: "coremmc-hosting.firebaseapp.com",
+            projectId: "coremmc-hosting",
+            storageBucket: "coremmc-hosting.firebasestorage.app",
+            messagingSenderId: "483642646077",
+            appId: "1:483642646077:web:1e72697f704664e5af5454"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Google Login Function
+        function googleLogin() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider)
+                .then((result) => {
+                    alert("Welcome " + result.user.displayName + " to CoreMMC!");
+                    window.location.href = "index.html"; // Login ke baad kahan bhejna hai
+                }).catch((error) => {
+                    alert("Error: " + error.message);
+                });
+        }
+
+        // Discord Login (Abhi ke liye alert)
+        function discordLogin() {
+            alert("Discord login setup karne ke liye Discord Developer Portal se Client ID chahiye hogi. Kya aap use bhi setup karna chahte hain?");
+        }
+    </script>
+</body>
+</html>
+
