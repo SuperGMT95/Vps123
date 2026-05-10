@@ -38,111 +38,125 @@
         .btn-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
         .btn-white { background: white; color: #1e293b; }
 
-        /* --- PROFILE SETUP SPECIFIC --- */
-        .upload-area { 
-            border: 2px dashed #475569; border-radius: 15px; padding: 20px; margin: 15px 0; cursor: pointer; 
-        }
+        /* --- PROFILE SETUP --- */
+        .upload-area { border: 2px dashed #475569; border-radius: 15px; padding: 20px; margin: 15px 0; cursor: pointer; }
         .preview-circle { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin: 10px auto; display: block; border: 2px solid var(--primary); }
-        .preview-banner { width: 100%; height: 80px; border-radius: 10px; object-fit: cover; margin-top: 10px; display: block; }
+        .preview-banner { width: 100%; height: 60px; border-radius: 8px; object-fit: cover; display: block; margin: 5px auto; background: #475569;}
 
         /* --- MAIN APP INTERFACE --- */
         #main-app { display: none; height: 100vh; flex-direction: column; background: #313338; }
-        
         .app-body { display: flex; flex: 1; overflow: hidden; }
         
+        /* Sidebar */
         .sidebar { width: 72px; background: #1e1f22; display: flex; flex-direction: column; align-items: center; padding: 15px 0; gap: 12px; }
         .nav-icon { width: 48px; height: 48px; background: #313338; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; font-size: 20px; }
-        .nav-icon:hover { border-radius: 15px; background: var(--primary); }
+        .nav-icon:hover, .nav-icon.active { border-radius: 15px; background: var(--primary); }
 
-        .chat-container { flex: 1; display: flex; flex-direction: column; background: #313338; }
-        #chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        
+        /* Content Area */
+        .content-panel { flex: 1; display: flex; flex-direction: column; }
+        .section { display: none; flex: 1; flex-direction: column; }
+        .section.active { display: flex; }
+
+        /* Chat UI */
+        #chat-messages, #dm-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
         .msg { display: flex; gap: 12px; align-items: flex-start; }
-        .msg img { width: 40px; height: 40px; border-radius: 50%; }
+        .msg img { width: 40px; height: 40px; border-radius: 50%; background: #eee; }
         .msg-text { background: #383a40; padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 14px; }
         .msg-user { font-size: 12px; font-weight: bold; color: var(--primary); margin-bottom: 4px; }
 
         .chat-input-area { padding: 20px; background: #313338; }
-        .input-wrap { background: #383a40; border-radius: 8px; padding: 10px 15px; display: flex; gap: 12px; }
-        .input-wrap input { background: transparent; border: none; flex: 1; margin: 0; padding: 0; }
+        .input-wrap { background: #383a40; border-radius: 8px; padding: 10px 15px; display: flex; gap: 12px; align-items: center;}
+        .input-wrap input { background: transparent; border: none; flex: 1; color: white; outline: none;}
 
+        /* Bottom Nav */
         .bottom-nav { height: 60px; background: #232428; display: flex; justify-content: space-around; align-items: center; }
-        .tab-item { color: #b5bac1; font-size: 20px; cursor: pointer; text-align: center; }
+        .tab-item { color: #b5bac1; font-size: 20px; cursor: pointer; }
         .tab-item.active { color: white; }
+
+        /* Profile Section */
+        .profile-view { padding: 40px; text-align: center; }
+        .user-banner { width: 100%; height: 120px; background: var(--primary); border-radius: 15px; margin-bottom: -50px; }
+        .user-pfp-large { width: 100px; height: 100px; border-radius: 50%; border: 4px solid #313338; position: relative; }
     </style>
 </head>
 <body>
 
-    <div id="login-overlay" class="full-screen-overlay">
+    <div id="loading-screen" class="full-screen-overlay">
+        <div class="card"><h2>CoreMMC Hub...</h2></div>
+    </div>
+
+    <div id="login-overlay" class="full-screen-overlay" style="display:none;">
         <div class="card">
             <img src="https://i.ibb.co/KzF67sFZ/copilot-image-1761965106943.png" width="80" style="border-radius:50%; margin-bottom:15px;">
             <h2>CoreMMC Login</h2>
             <button class="btn btn-white" onclick="googleLogin()">
                 <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="18"> Continue with Google
             </button>
+            <div style="margin: 10px 0; color: #64748b; font-size: 12px;">OR</div>
             <input type="email" id="login-email" placeholder="Email Address">
             <input type="password" id="login-pass" placeholder="Password">
-            <button class="btn btn-blue" onclick="startSetup()">Log In</button>
+            <button class="btn btn-blue" onclick="emailLogin()">Log In</button>
             <p style="margin-top:15px; font-size:13px; color:#94a3b8;">New? <a href="#" style="color:var(--primary);" onclick="showRegister()">Create One</a></p>
         </div>
     </div>
 
     <div id="setup-overlay" class="full-screen-overlay" style="display:none;">
         <div class="card">
-            <h3>Customise Profile</h3>
-            <p style="font-size:12px; color:#94a3b8; margin-bottom:20px;">Stand out in the community</p>
-            
+            <h3>Setup Your Identity</h3>
             <div class="upload-area" onclick="document.getElementById('pfp-input').click()">
                 <img id="pfp-preview" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="preview-circle">
-                <p style="font-size:12px;">Upload Avatar</p>
+                <p style="font-size:12px;">Upload Photo</p>
                 <input type="file" id="pfp-input" hidden onchange="previewFile('pfp')">
             </div>
-
             <div class="upload-area" onclick="document.getElementById('banner-input').click()">
-                <div id="banner-preview" style="background:#475569; width:100%; height:60px; border-radius:8px;"></div>
-                <p style="font-size:12px; margin-top:5px;">Upload Banner</p>
+                <div id="banner-preview" class="preview-banner"></div>
+                <p style="font-size:12px;">Upload Banner</p>
                 <input type="file" id="banner-input" hidden onchange="previewFile('banner')">
             </div>
-
-            <button class="btn btn-blue" onclick="openChat()">Save & Continue</button>
-            <p class="skip-link" style="margin-top:15px; font-size:13px; cursor:pointer; color:#94a3b8;" onclick="openChat()">Skip for now</p>
+            <button class="btn btn-blue" onclick="finishSetup()">Open Hub</button>
+            <p style="margin-top:10px; cursor:pointer; font-size:12px;" onclick="finishSetup()">Skip</p>
         </div>
     </div>
 
     <div id="main-app">
         <div class="app-body">
             <div class="sidebar">
-                <div class="nav-icon" title="Global Chat"><i class="fas fa-globe"></i></div>
-                <div class="nav-icon" title="DMs" style="color:#23a559;"><i class="fas fa-comment-dots"></i></div>
+                <div class="nav-icon active" onclick="switchSection('public')"><i class="fas fa-globe"></i></div>
+                <div class="nav-icon" onclick="switchSection('dm')"><i class="fas fa-comment-dots"></i></div>
             </div>
 
-            <div class="chat-container">
-                <div style="padding:15px; border-bottom:1px solid #232428; font-weight:bold;"># public-chat</div>
-                <div id="chat-messages">
-                    <div class="msg">
-                        <img src="https://i.ibb.co/KzF67sFZ/copilot-image-1761965106943.png">
-                        <div class="msg-text">
-                            <div class="msg-user">CoreMMC System</div>
-                            Welcome to the official CoreMMC community chat!
+            <div class="content-panel">
+                <div id="sec-public" class="section active">
+                    <div style="padding:15px; border-bottom:1px solid #232428;"># public-chat</div>
+                    <div id="chat-messages"></div>
+                    <div class="chat-input-area">
+                        <div class="input-wrap">
+                            <input type="text" id="chat-input" placeholder="Message #public-chat" onkeypress="handleSend(event, 'public')">
+                            <i class="fas fa-paper-plane" onclick="sendMessage('public')" style="color:var(--primary); cursor:pointer;"></i>
                         </div>
                     </div>
                 </div>
-                
-                <div class="chat-input-area">
-                    <div class="input-wrap">
-                        <i class="fas fa-plus-circle" style="color:#b5bac1; cursor:pointer;"></i>
-                        <input type="text" id="chat-input" placeholder="Message #public-chat" onkeypress="handleSend(event)">
-                        <i class="fas fa-smile" style="color:#b5bac1; cursor:pointer;"></i>
+
+                <div id="sec-dm" class="section">
+                    <div style="padding:15px; border-bottom:1px solid #232428;">Personal DMs</div>
+                    <div id="dm-messages"><p style="padding:20px; color:#aaa;">No private messages yet.</p></div>
+                </div>
+
+                <div id="sec-profile" class="section">
+                    <div class="profile-view">
+                        <div class="user-banner" id="view-banner"></div>
+                        <img src="" id="view-pfp" class="user-pfp-large">
+                        <h2 id="view-name" style="margin-top:10px;">User Name</h2>
+                        <button class="btn btn-blue" style="max-width:200px;" onclick="auth.signOut()">Logout</button>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="bottom-nav">
-            <div class="tab-item active" title="Chat"><i class="fas fa-comments"></i></div>
-            <div class="tab-item" title="Personal DM"><i class="fas fa-user-friends"></i></div>
-            <div class="tab-item" title="Notifications"><i class="fas fa-bell"></i></div>
-            <div class="tab-item" title="Profile"><i class="fas fa-user-circle"></i></div>
+            <div class="tab-item active" onclick="switchSection('public')"><i class="fas fa-comments"></i></div>
+            <div class="tab-item" onclick="switchSection('dm')"><i class="fas fa-user-friends"></i></div>
+            <div class="tab-item" onclick="switchSection('profile')"><i class="fas fa-user-circle"></i></div>
         </div>
     </div>
 
@@ -160,19 +174,31 @@
             appId: "1:483642646077:web:1e72697f704664e5af5454",
             databaseURL: "https://coremmc-chat-default-rtdb.firebaseio.com"
         };
-
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
-        let user = null;
+        let currentUser = null;
 
-        // Flow: Login -> Setup -> Chat
+        // --- SESSION PERSISTENCE (Fix Re-login) ---
+        auth.onAuthStateChanged(user => {
+            document.getElementById('loading-screen').style.display = 'none';
+            if (user) {
+                currentUser = user;
+                openMainApp();
+            } else {
+                document.getElementById('login-overlay').style.display = 'flex';
+                document.getElementById('main-app').style.display = 'none';
+            }
+        });
+
         function googleLogin() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).then((res) => {
-                user = res.user;
-                startSetup();
-            });
+            auth.signInWithPopup(provider);
+        }
+
+        function emailLogin() {
+            // Placeholder for email auth - automatically triggers setup for new users
+            startSetup();
         }
 
         function startSetup() {
@@ -180,47 +206,41 @@
             document.getElementById('setup-overlay').style.display = 'flex';
         }
 
-        function previewFile(type) {
-            const input = document.getElementById(type + '-input');
-            const preview = document.getElementById(type + '-preview');
-            const file = input.files[0];
-            const reader = new FileReader();
-
-            reader.onloadend = function() {
-                if(type === 'pfp') preview.src = reader.result;
-                else preview.style.backgroundImage = `url(${reader.result})`;
-            }
-            if(file) reader.readAsDataURL(file);
+        function finishSetup() {
+            document.getElementById('setup-overlay').style.display = 'none';
+            openMainApp();
         }
 
-        function openChat() {
-            document.getElementById('setup-overlay').style.display = 'none';
+        function openMainApp() {
             document.getElementById('main-app').style.display = 'flex';
+            document.getElementById('view-name').innerText = currentUser.displayName || "User";
+            document.getElementById('view-pfp').src = currentUser.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
             loadMessages();
         }
 
-        function handleSend(e) {
-            if(e.key === 'Enter') {
-                const input = document.getElementById('chat-input');
-                if(!input.value.trim()) return;
-                
-                db.ref('public_chat').push({
-                    name: user ? user.displayName : "Guest",
-                    text: input.value,
-                    pfp: user ? user.photoURL : 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
-                    time: Date.now()
-                });
-                input.value = "";
-            }
+        // --- CHAT SYSTEM ---
+        function handleSend(e, type) { if(e.key === 'Enter') sendMessage(type); }
+
+        function sendMessage(type) {
+            const input = document.getElementById('chat-input');
+            if(!input.value.trim()) return;
+
+            db.ref('public_chat').push({
+                name: currentUser.displayName || "CoreMember",
+                text: input.value,
+                pfp: currentUser.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
+                time: Date.now()
+            });
+            input.value = "";
         }
 
         function loadMessages() {
             db.ref('public_chat').limitToLast(50).on('value', snap => {
-                const chatBox = document.getElementById('chat-messages');
-                chatBox.innerHTML = "";
+                const box = document.getElementById('chat-messages');
+                box.innerHTML = "";
                 snap.forEach(child => {
                     const data = child.val();
-                    chatBox.innerHTML += `
+                    box.innerHTML += `
                         <div class="msg">
                             <img src="${data.pfp}">
                             <div class="msg-text">
@@ -229,14 +249,30 @@
                             </div>
                         </div>`;
                 });
-                chatBox.scrollTop = chatBox.scrollHeight;
+                box.scrollTop = box.scrollHeight;
             });
         }
 
-        function showRegister() {
-            alert("Registration logic aapke backend se connect hogi. Abhi aap Google Login use karein!");
+        // --- NAVIGATION ---
+        function switchSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab-item, .nav-icon').forEach(i => i.classList.remove('active'));
+            
+            document.getElementById('sec-' + id).classList.add('active');
+            event.currentTarget.classList.add('active');
         }
+
+        function previewFile(type) {
+            const file = document.getElementById(type + '-input').files[0];
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                if(type === 'pfp') document.getElementById('pfp-preview').src = reader.result;
+                else document.getElementById('banner-preview').style.background = `url(${reader.result}) center/cover`;
+            }
+            if(file) reader.readAsDataURL(file);
+        }
+
+        function showRegister() { alert("Use Google Login for now, Email registration is being updated!"); }
     </script>
 </body>
 </html>
-
