@@ -3,180 +3,238 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CoreMMC - Login</title>
+    <title>CoreMMC - Hub</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+        :root { --primary: #3b82f6; --discord: #5865F2; --dark-bg: #0f172a; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
 
         body {
-            /* CoreMMC Background GIF */
-            background: url('https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExamJlOHR5Y2Fod2s0ZWg2MzNuZzZqZXJjdTloeTJjZ2hrcTNpeTZ0ayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/skzEY0OczUGwhamSxk/giphy.gif');
-            background-size: cover;
-            background-position: center;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
+            background: url('https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExamJlOHR5Y2Fod2s0ZWg2MzNuZzZqZXJjdTloeTJjZ2hrcTNpeTZ0ayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/skzEY0OczUGwhamSxk/giphy.gif') center/cover;
+            height: 100vh; overflow: hidden; color: white;
         }
 
-        .login-card {
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 40px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-            color: white;
+        /* --- AUTH & SETUP OVERLAYS --- */
+        .full-screen-overlay {
+            position: fixed; inset: 0; z-index: 100;
+            background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(15px);
+            display: flex; justify-content: center; align-items: center;
         }
 
-        .logo {
-            width: 80px;
-            margin-bottom: 20px;
-            border-radius: 50%;
-            border: 2px solid #3b82f6;
+        .card {
+            background: rgba(30, 41, 59, 0.7); padding: 40px; border-radius: 20px;
+            width: 90%; max-width: 420px; text-align: center; border: 1px solid rgba(255,255,255,0.1);
         }
 
-        h2 {
-            font-size: 24px;
-            margin-bottom: 10px;
-            letter-spacing: 1px;
+        input, select {
+            width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px;
+            border: 1px solid #334155; background: rgba(15, 23, 42, 0.8); color: white; outline: none;
         }
 
-        .social-btn {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border-radius: 10px;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-weight: 600;
-            transition: 0.3s;
-            font-size: 15px;
+        .btn {
+            width: 100%; padding: 12px; border: none; border-radius: 10px;
+            font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px;
         }
+        .btn-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
+        .btn-white { background: white; color: #1e293b; }
 
-        .google-btn { background: white; color: #1e293b; }
-        .discord-btn { background: #5865F2; color: white; }
-
-        .social-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        /* --- PROFILE SETUP SPECIFIC --- */
+        .upload-area { 
+            border: 2px dashed #475569; border-radius: 15px; padding: 20px; margin: 15px 0; cursor: pointer; 
         }
+        .preview-circle { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin: 10px auto; display: block; border: 2px solid var(--primary); }
+        .preview-banner { width: 100%; height: 80px; border-radius: 10px; object-fit: cover; margin-top: 10px; display: block; }
 
-        .divider {
-            margin: 20px 0;
-            display: flex;
-            align-items: center;
-            color: #64748b;
-            font-size: 12px;
-        }
+        /* --- MAIN APP INTERFACE --- */
+        #main-app { display: none; height: 100vh; flex-direction: column; background: #313338; }
+        
+        .app-body { display: flex; flex: 1; overflow: hidden; }
+        
+        .sidebar { width: 72px; background: #1e1f22; display: flex; flex-direction: column; align-items: center; padding: 15px 0; gap: 12px; }
+        .nav-icon { width: 48px; height: 48px; background: #313338; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; font-size: 20px; }
+        .nav-icon:hover { border-radius: 15px; background: var(--primary); }
 
-        .divider::before, .divider::after {
-            content: "";
-            flex: 1;
-            height: 1px;
-            background: #334155;
-            margin: 0 10px;
-        }
+        .chat-container { flex: 1; display: flex; flex-direction: column; background: #313338; }
+        #chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        
+        .msg { display: flex; gap: 12px; align-items: flex-start; }
+        .msg img { width: 40px; height: 40px; border-radius: 50%; }
+        .msg-text { background: #383a40; padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 14px; }
+        .msg-user { font-size: 12px; font-weight: bold; color: var(--primary); margin-bottom: 4px; }
 
-        input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            background: rgba(30, 41, 59, 0.8);
-            border: 1px solid #334155;
-            border-radius: 10px;
-            color: white;
-            outline: none;
-        }
+        .chat-input-area { padding: 20px; background: #313338; }
+        .input-wrap { background: #383a40; border-radius: 8px; padding: 10px 15px; display: flex; gap: 12px; }
+        .input-wrap input { background: transparent; border: none; flex: 1; margin: 0; padding: 0; }
 
-        .login-btn {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            border: none;
-            color: white;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .footer-text { margin-top: 20px; font-size: 13px; }
-        .footer-text a { color: #3b82f6; text-decoration: none; }
+        .bottom-nav { height: 60px; background: #232428; display: flex; justify-content: space-around; align-items: center; }
+        .tab-item { color: #b5bac1; font-size: 20px; cursor: pointer; text-align: center; }
+        .tab-item.active { color: white; }
     </style>
 </head>
 <body>
 
-    <div class="login-card">
-        <img src="https://i.ibb.co/KzF67sFZ/copilot-image-1761965106943.png" alt="CoreMMC" class="logo">
-        
-        <h2>Welcome Back</h2>
-        <p style="margin-bottom:30px; color:#94a3b8;">Login to CoreMMC Hosting</p>
+    <div id="login-overlay" class="full-screen-overlay">
+        <div class="card">
+            <img src="https://i.ibb.co/KzF67sFZ/copilot-image-1761965106943.png" width="80" style="border-radius:50%; margin-bottom:15px;">
+            <h2>CoreMMC Login</h2>
+            <button class="btn btn-white" onclick="googleLogin()">
+                <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="18"> Continue with Google
+            </button>
+            <input type="email" id="login-email" placeholder="Email Address">
+            <input type="password" id="login-pass" placeholder="Password">
+            <button class="btn btn-blue" onclick="startSetup()">Log In</button>
+            <p style="margin-top:15px; font-size:13px; color:#94a3b8;">New? <a href="#" style="color:var(--primary);" onclick="showRegister()">Create One</a></p>
+        </div>
+    </div>
 
-        <button class="social-btn google-btn" onclick="googleLogin()">
-            <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="20"> Continue with Google
-        </button>
+    <div id="setup-overlay" class="full-screen-overlay" style="display:none;">
+        <div class="card">
+            <h3>Customise Profile</h3>
+            <p style="font-size:12px; color:#94a3b8; margin-bottom:20px;">Stand out in the community</p>
+            
+            <div class="upload-area" onclick="document.getElementById('pfp-input').click()">
+                <img id="pfp-preview" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="preview-circle">
+                <p style="font-size:12px;">Upload Avatar</p>
+                <input type="file" id="pfp-input" hidden onchange="previewFile('pfp')">
+            </div>
 
-        <button class="social-btn discord-btn" onclick="discordLogin()">
-            <i class="fab fa-discord"></i> Continue with Discord
-        </button>
+            <div class="upload-area" onclick="document.getElementById('banner-input').click()">
+                <div id="banner-preview" style="background:#475569; width:100%; height:60px; border-radius:8px;"></div>
+                <p style="font-size:12px; margin-top:5px;">Upload Banner</p>
+                <input type="file" id="banner-input" hidden onchange="previewFile('banner')">
+            </div>
 
-        <div class="divider">OR</div>
+            <button class="btn btn-blue" onclick="openChat()">Save & Continue</button>
+            <p class="skip-link" style="margin-top:15px; font-size:13px; cursor:pointer; color:#94a3b8;" onclick="openChat()">Skip for now</p>
+        </div>
+    </div>
 
-        <input type="email" placeholder="Email Address">
-        <input type="password" placeholder="Password">
-        
-        <button class="login-btn">Log In</button>
+    <div id="main-app">
+        <div class="app-body">
+            <div class="sidebar">
+                <div class="nav-icon" title="Global Chat"><i class="fas fa-globe"></i></div>
+                <div class="nav-icon" title="DMs" style="color:#23a559;"><i class="fas fa-comment-dots"></i></div>
+            </div>
 
-        <div class="footer-text">
-            Don't have an account? <a href="#">Create One</a>
+            <div class="chat-container">
+                <div style="padding:15px; border-bottom:1px solid #232428; font-weight:bold;"># public-chat</div>
+                <div id="chat-messages">
+                    <div class="msg">
+                        <img src="https://i.ibb.co/KzF67sFZ/copilot-image-1761965106943.png">
+                        <div class="msg-text">
+                            <div class="msg-user">CoreMMC System</div>
+                            Welcome to the official CoreMMC community chat!
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chat-input-area">
+                    <div class="input-wrap">
+                        <i class="fas fa-plus-circle" style="color:#b5bac1; cursor:pointer;"></i>
+                        <input type="text" id="chat-input" placeholder="Message #public-chat" onkeypress="handleSend(event)">
+                        <i class="fas fa-smile" style="color:#b5bac1; cursor:pointer;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-nav">
+            <div class="tab-item active" title="Chat"><i class="fas fa-comments"></i></div>
+            <div class="tab-item" title="Personal DM"><i class="fas fa-user-friends"></i></div>
+            <div class="tab-item" title="Notifications"><i class="fas fa-bell"></i></div>
+            <div class="tab-item" title="Profile"><i class="fas fa-user-circle"></i></div>
         </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
 
     <script>
-        // Aapka screenshot wala asli config
         const firebaseConfig = {
             apiKey: "AIzaSyDNwc4Ktuq-v5VX1ezzCNfK_sJmbFs2_x0",
             authDomain: "coremmc-hosting.firebaseapp.com",
             projectId: "coremmc-hosting",
             storageBucket: "coremmc-hosting.firebasestorage.app",
             messagingSenderId: "483642646077",
-            appId: "1:483642646077:web:1e72697f704664e5af5454"
+            appId: "1:483642646077:web:1e72697f704664e5af5454",
+            databaseURL: "https://coremmc-chat-default-rtdb.firebaseio.com"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+        let user = null;
 
-        // Google Login Function
+        // Flow: Login -> Setup -> Chat
         function googleLogin() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            firebase.auth().signInWithPopup(provider)
-                .then((result) => {
-                    alert("Welcome " + result.user.displayName + " to CoreMMC!");
-                    window.location.href = "index.html"; // Login ke baad kahan bhejna hai
-                }).catch((error) => {
-                    alert("Error: " + error.message);
-                });
+            auth.signInWithPopup(provider).then((res) => {
+                user = res.user;
+                startSetup();
+            });
         }
 
-        // Discord Login (Abhi ke liye alert)
-        function discordLogin() {
-            alert("Discord login setup karne ke liye Discord Developer Portal se Client ID chahiye hogi. Kya aap use bhi setup karna chahte hain?");
+        function startSetup() {
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('setup-overlay').style.display = 'flex';
+        }
+
+        function previewFile(type) {
+            const input = document.getElementById(type + '-input');
+            const preview = document.getElementById(type + '-preview');
+            const file = input.files[0];
+            const reader = new FileReader();
+
+            reader.onloadend = function() {
+                if(type === 'pfp') preview.src = reader.result;
+                else preview.style.backgroundImage = `url(${reader.result})`;
+            }
+            if(file) reader.readAsDataURL(file);
+        }
+
+        function openChat() {
+            document.getElementById('setup-overlay').style.display = 'none';
+            document.getElementById('main-app').style.display = 'flex';
+            loadMessages();
+        }
+
+        function handleSend(e) {
+            if(e.key === 'Enter') {
+                const input = document.getElementById('chat-input');
+                if(!input.value.trim()) return;
+                
+                db.ref('public_chat').push({
+                    name: user ? user.displayName : "Guest",
+                    text: input.value,
+                    pfp: user ? user.photoURL : 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
+                    time: Date.now()
+                });
+                input.value = "";
+            }
+        }
+
+        function loadMessages() {
+            db.ref('public_chat').limitToLast(50).on('value', snap => {
+                const chatBox = document.getElementById('chat-messages');
+                chatBox.innerHTML = "";
+                snap.forEach(child => {
+                    const data = child.val();
+                    chatBox.innerHTML += `
+                        <div class="msg">
+                            <img src="${data.pfp}">
+                            <div class="msg-text">
+                                <div class="msg-user">${data.name}</div>
+                                ${data.text}
+                            </div>
+                        </div>`;
+                });
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+        }
+
+        function showRegister() {
+            alert("Registration logic aapke backend se connect hogi. Abhi aap Google Login use karein!");
         }
     </script>
 </body>
