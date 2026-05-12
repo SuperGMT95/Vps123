@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CoreMMC Hosting - Ultimate Hub</title>
+    <title>CoreMMC Hosting - Ultimate Hub v3.0</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --primary: #5865F2; --bg: #ffffff; --text: #313338; --gray: #f2f3f5; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body, html { height: 100vh; width: 100vw; overflow: hidden; background: #000; }
+        
+        /* Black Screen Fix */
+        body, html { height: 100vh; width: 100vw; overflow: hidden; background: #ffffff !important; }
 
         /* --- LOADING SCREEN --- */
         #main-loader { position: fixed; inset: 0; background: #1e1f22; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
@@ -23,36 +25,41 @@
         .input-box:focus { border-color: var(--primary); }
         .btn-main { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
 
+        /* --- SETUP POPUP STYLES --- */
+        #core-setup-popup { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:999999; overflow-y:auto; padding:20px; align-items:center; justify-content:center; backdrop-filter: blur(5px); }
+        .setup-card { background:white; width:100%; max-width:450px; border-radius:24px; overflow:hidden; position:relative; box-shadow:0 20px 50px rgba(0,0,0,0.3); }
+        .pop-banner { height:120px; background:#5865F2; position:relative; background-size: cover; background-position: center; }
+        .pop-pfp-wrap { position:absolute; bottom:-40px; left:20px; }
+        .pop-pfp-img { width:85px; height:85px; border-radius:50%; border:4px solid white; background:#eee; object-fit:cover; }
+
         /* --- MAIN APP UI --- */
-        #app { display: none; height: 100vh; flex-direction: column; background: var(--bg); }
-        .header-bar { height: 55px; border-bottom: 1px solid #eee; display: flex; align-items: center; padding: 0 15px; font-weight: bold; gap: 10px; position: sticky; top: 0; background: white; z-index: 100; }
+        #app { display: none; height: 100vh; width: 100% !important; position: fixed !important; top: 0; left: 0; flex-direction: column; background: var(--bg); z-index: 1000; }
+        .show-app { display: flex !important; }
         
-        .content-panel { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+        .header-bar { height: 55px; border-bottom: 1px solid #eee; display: flex; align-items: center; padding: 0 15px; font-weight: bold; gap: 10px; background: white; z-index: 100; }
+        .content-panel { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
         .section { display: none; height: 100%; flex-direction: column; }
         .section.active { display: flex; }
 
         /* --- CHAT STYLES --- */
-        #chat-area { flex: 1; padding: 20px; overflow-y: auto; background: white; display: flex; flex-direction: column; gap: 15px; }
-        .message-bubble { display: flex; gap: 12px; animation: slideIn 0.2s ease; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .message-bubble img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #eee; }
+        #chat-area { flex: 1 !important; padding: 20px; overflow-y: auto !important; background: white !important; display: flex !important; flex-direction: column !important; gap: 15px; padding-bottom: 20px !important; }
+        .message-bubble { display: flex; gap: 12px; margin-bottom: 5px; }
+        .message-bubble img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
         .msg-text-wrap { background: #f1f2f6; padding: 10px 15px; border-radius: 0 18px 18px 18px; max-width: 80%; }
         .msg-user { font-size: 12px; font-weight: bold; color: var(--primary); margin-bottom: 3px; }
 
-        .chat-input-bar { padding: 15px; border-top: 1px solid #eee; display: flex; gap: 10px; background: white; }
+        .chat-input-bar { padding: 15px; border-top: 1px solid #eee; display: flex; gap: 10px; background: white; padding-bottom: 25px; }
         .chat-input-bar input { flex: 1; padding: 12px 20px; border: 1px solid #ddd; border-radius: 25px; outline: none; }
         .send-btn { background: var(--primary); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
         /* --- PROFILE STYLES --- */
-        .profile-header { height: 140px; background: var(--primary); position: relative; }
+        .profile-header-box { height: 140px; background: var(--primary); position: relative; background-size: cover; }
         .profile-img-large { width: 110px; height: 110px; border-radius: 50%; border: 5px solid white; position: absolute; bottom: -55px; left: 25px; background: #eee; object-fit: cover; }
-        .profile-info { padding: 65px 25px 25px; }
-        .info-card { background: #f8f9fa; padding: 20px; border-radius: 15px; margin-top: 20px; border: 1px solid #eee; }
+        .profile-info { padding: 65px 25px 25px; overflow-y: auto; }
 
         /* --- BOTTOM NAV --- */
         .bottom-nav { height: 70px; border-top: 1px solid #eee; display: flex; justify-content: space-around; align-items: center; background: white; }
-        .nav-tab { text-align: center; color: #888; cursor: pointer; transition: 0.3s; flex: 1; }
-        .nav-tab i { font-size: 22px; }
+        .nav-tab { text-align: center; color: #888; cursor: pointer; flex: 1; }
         .nav-tab.active { color: var(--primary); }
     </style>
 </head>
@@ -60,11 +67,35 @@
 
     <div id="main-loader"><div class="spinner"></div><h2 style="margin-top:20px;">CoreMMC Hosting</h2></div>
 
+    <div id="core-setup-popup">
+        <div class="setup-card">
+            <div id="pop-banner-prev" class="pop-banner">
+                <label for="banner-upload" style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.5); color:white; padding:5px 10px; border-radius:15px; font-size:12px; cursor:pointer;"><i class="fas fa-camera"></i> Edit Banner</label>
+                <input type="file" id="banner-upload" hidden onchange="previewImg(this, 'pop-banner-prev', true)">
+                <div class="pop-pfp-wrap">
+                    <img id="pop-pfp-prev" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="pop-pfp-img">
+                    <label for="pfp-upload" style="position:absolute; bottom:0; right:0; background:white; padding:5px; border-radius:50%; box-shadow:0 2px 5px rgba(0,0,0,0.2); cursor:pointer;"><i class="fas fa-pen" style="font-size:10px;"></i></label>
+                    <input type="file" id="pfp-upload" hidden onchange="previewImg(this, 'pop-pfp-prev', false)">
+                </div>
+            </div>
+            <div style="padding:50px 25px 25px;">
+                <h3 style="margin-bottom:15px; color:#313338;">Finalize Your Profile</h3>
+                <input type="text" id="setup-username" class="input-box" placeholder="Choose Username">
+                <input type="tel" id="setup-phone" class="input-box" placeholder="Phone Number">
+                <input type="text" id="setup-address" class="input-box" placeholder="Address (Optional)">
+                <div id="google-pass-fields">
+                    <input type="password" id="setup-pass" class="input-box" placeholder="Create Hub Password">
+                    <input type="password" id="setup-conf" class="input-box" placeholder="Confirm Password">
+                </div>
+                <button onclick="saveFinalProfile()" class="btn-main">Save & Start Chatting</button>
+            </div>
+        </div>
+    </div>
+
     <div id="auth-screen" class="auth-overlay" style="display:none;">
         <div class="auth-card">
             <img src="https://i.ibb.co/KzF67sFZ/copilot-image-1761965106943.png" width="90">
             <h2 id="auth-title">CoreMMC Login</h2>
-            
             <div id="login-fields">
                 <input type="email" id="l-email" class="input-box" placeholder="Email Address">
                 <input type="password" id="l-pass" class="input-box" placeholder="Password">
@@ -74,15 +105,12 @@
                 </button>
                 <p style="margin-top:20px; font-size:14px; cursor:pointer; color:var(--primary);" onclick="toggleView('reg')">New Member? Register Now</p>
             </div>
-
             <div id="reg-fields" style="display:none;">
                 <input type="text" id="r-name" class="input-box" placeholder="Full Name">
                 <input type="email" id="r-email" class="input-box" placeholder="Email Address">
-                <input type="tel" id="r-phone" class="input-box" placeholder="Phone Number">
-                <input type="text" id="r-address" class="input-box" placeholder="Address (Optional)">
                 <input type="password" id="r-pass" class="input-box" placeholder="Create Password">
                 <input type="password" id="r-confirm" class="input-box" placeholder="Confirm Password">
-                <button class="btn-main" onclick="handleRegister()">Register & Join Chat</button>
+                <button class="btn-main" onclick="handleRegister()">Register & Setup Profile</button>
                 <p style="margin-top:20px; font-size:14px; cursor:pointer; color:var(--primary);" onclick="toggleView('login')">Back to Login</p>
             </div>
         </div>
@@ -93,7 +121,6 @@
             <img src="https://i.ibb.co/KzF67sFZ/copilot-image-1761965106943.png" width="35">
             <span>CoreMMC Hub</span>
         </div>
-
         <div class="content-panel">
             <div id="sec-public" class="section active">
                 <div id="chat-area"></div>
@@ -102,33 +129,24 @@
                     <button class="send-btn" onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
                 </div>
             </div>
-
             <div id="sec-dm" class="section">
-                <div style="margin:auto; text-align:center; color:#888;">
-                    <i class="fas fa-user-shield" style="font-size:60px; margin-bottom:15px;"></i>
-                    <h3>Private Messages</h3>
-                    <p>Coming Soon for Premium Clients</p>
-                </div>
+                <div style="margin:auto; text-align:center; color:#888;"><i class="fas fa-user-shield" style="font-size:60px;"></i><h3>DMs Coming Soon</h3></div>
             </div>
-
             <div id="sec-profile" class="section">
-                <div class="profile-header">
+                <div id="u-banner-bg" class="profile-header-box">
                     <img id="u-pfp" src="" class="profile-img-large">
-                    <label for="pfp-input" style="position:absolute; bottom:-50px; left:95px; background:white; padding:6px; border-radius:50%; box-shadow:0 2px 5px rgba(0,0,0,0.2); cursor:pointer;"><i class="fas fa-pen" style="font-size:12px;"></i></label>
-                    <input type="file" id="pfp-input" hidden onchange="updatePFP()">
                 </div>
                 <div class="profile-info">
-                    <h1 id="u-name">User</h1>
-                    <div class="info-card">
-                        <p><strong>Email:</strong> <span id="u-email">...</span></p>
-                        <p style="margin-top:10px;"><strong>Status:</strong> CoreMMC Verified</p>
+                    <h1 id="u-name-display">User</h1>
+                    <div style="background:#f8f9fa; padding:15px; border-radius:15px; margin-top:20px;">
+                        <p><strong>Email:</strong> <span id="u-email-display">...</span></p>
+                        <p style="margin-top:5px;"><strong>Role:</strong> Official Member</p>
                     </div>
-                    <button onclick="changeName()" style="width:100%; padding:12px; margin-top:20px; border:1.5px solid var(--primary); background:none; color:var(--primary); border-radius:10px; font-weight:bold; cursor:pointer;">Update Profile Name</button>
-                    <button onclick="auth.signOut()" style="width:100%; padding:12px; margin-top:15px; background:#ed4245; color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">Logout</button>
+                    <button onclick="document.getElementById('core-setup-popup').style.display='flex'" style="width:100%; padding:12px; margin-top:20px; border:1.5px solid var(--primary); background:none; color:var(--primary); border-radius:10px; font-weight:bold;">Edit Profile & Banner</button>
+                    <button onclick="auth.signOut()" style="width:100%; padding:12px; margin-top:10px; background:#ed4245; color:white; border:none; border-radius:10px; font-weight:bold;">Logout</button>
                 </div>
             </div>
         </div>
-
         <div class="bottom-nav">
             <div class="nav-tab active" onclick="nav('public', this)"><i class="fas fa-comments"></i><p style="font-size:10px;">Public</p></div>
             <div class="nav-tab" onclick="nav('dm', this)"><i class="fas fa-comment-dots"></i><p style="font-size:10px;">DMs</p></div>
@@ -153,42 +171,76 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
-        let userObj = null;
+        let activeUser = null;
 
-        // AUTH PERSISTENCE
-        auth.onAuthStateChanged(u => {
+        // 1. Auth Persistence Logic
+        auth.onAuthStateChanged(user => {
             document.getElementById('main-loader').style.display = 'none';
-            if(u) {
-                userObj = u;
-                document.getElementById('auth-screen').style.display = 'none';
-                document.getElementById('app').style.display = 'flex';
-                initHub();
+            if(user) {
+                activeUser = user;
+                db.ref('users/' + user.uid).once('value', snap => {
+                    const data = snap.val();
+                    if(!data || !data.setupDone) {
+                        document.getElementById('core-setup-popup').style.display = 'flex';
+                        document.getElementById('auth-screen').style.display = 'none';
+                    } else {
+                        launchCoreApp();
+                    }
+                });
             } else {
                 document.getElementById('auth-screen').style.display = 'flex';
-                document.getElementById('app').style.display = 'none';
+                document.getElementById('app').classList.remove('show-app');
             }
         });
+
+        // 2. Setup & Image Functions
+        function previewImg(input, targetId, isBanner) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    if(isBanner) document.getElementById(targetId).style.backgroundImage = `url(${e.target.result})`;
+                    else document.getElementById(targetId).src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function saveFinalProfile() {
+            const name = document.getElementById('setup-username').value;
+            const phone = document.getElementById('setup-phone').value;
+            const addr = document.getElementById('setup-address').value;
+            if(!name || !phone) return alert("Username and Phone are required!");
+
+            db.ref('users/' + activeUser.uid).update({
+                username: name, phone: phone, address: addr, setupDone: true, email: activeUser.email
+            }).then(() => {
+                activeUser.updateProfile({ displayName: name });
+                document.getElementById('core-setup-popup').style.display = 'none';
+                location.reload();
+            });
+        }
+
+        // 3. UI Handlers
+        function launchCoreApp() {
+            document.getElementById('app').classList.add('show-app');
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('u-name-display').innerText = activeUser.displayName || "Core Member";
+            document.getElementById('u-email-display').innerText = activeUser.email;
+            document.getElementById('u-pfp').src = activeUser.photoURL || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+            startChatSync();
+        }
 
         function toggleView(m) {
             document.getElementById('login-fields').style.display = m === 'reg' ? 'none' : 'block';
             document.getElementById('reg-fields').style.display = m === 'reg' ? 'block' : 'none';
-            document.getElementById('auth-title').innerText = m === 'reg' ? 'Join CoreMMC' : 'CoreMMC Login';
         }
 
         function handleRegister() {
-            const n = document.getElementById('r-name').value;
             const e = document.getElementById('r-email').value;
             const p = document.getElementById('r-pass').value;
             const c = document.getElementById('r-confirm').value;
-            const ph = document.getElementById('r-phone').value;
-            const ad = document.getElementById('r-address').value;
-
-            if(!n || !e || !p || p !== c) return alert("Error: Fields empty or Passwords don't match!");
-
-            auth.createUserWithEmailAndPassword(e, p).then(res => {
-                res.user.updateProfile({ displayName: n });
-                db.ref('users/' + res.user.uid).set({ name: n, phone: ph, address: ad, email: e });
-            }).catch(err => alert(err.message));
+            if(p !== c) return alert("Passwords don't match!");
+            auth.createUserWithEmailAndPassword(e, p).catch(err => alert(err.message));
         }
 
         function handleLogin() {
@@ -201,24 +253,14 @@
             auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
         }
 
-        function initHub() {
-            document.getElementById('u-name').innerText = userObj.displayName || "Core Member";
-            document.getElementById('u-email').innerText = userObj.email;
-            document.getElementById('u-pfp').src = userObj.photoURL || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
-            
+        // 4. Chat Engine
+        function startChatSync() {
             db.ref('public_chat').limitToLast(60).on('value', snap => {
                 const area = document.getElementById('chat-area');
                 area.innerHTML = "";
                 snap.forEach(c => {
                     const m = c.val();
-                    area.innerHTML += `
-                        <div class="message-bubble">
-                            <img src="${m.p}">
-                            <div class="msg-text-wrap">
-                                <div class="msg-user">${m.n}</div>
-                                <div>${m.t}</div>
-                            </div>
-                        </div>`;
+                    area.innerHTML += `<div class="message-bubble"><img src="${m.p}"><div class="msg-text-wrap"><div class="msg-user">${m.n}</div><div>${m.t}</div></div></div>`;
                 });
                 area.scrollTop = area.scrollHeight;
             });
@@ -228,9 +270,9 @@
             const inp = document.getElementById('msg-in');
             if(!inp.value.trim()) return;
             db.ref('public_chat').push({
-                n: userObj.displayName || "Core Member",
+                n: activeUser.displayName || "Member",
                 t: inp.value,
-                p: userObj.photoURL || "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+                p: activeUser.photoURL || "https://cdn-icons-png.flaticon.com/512/149/149071.png",
                 ts: Date.now()
             });
             inp.value = "";
@@ -242,148 +284,6 @@
             document.getElementById('sec-' + id).classList.add('active');
             el.classList.add('active');
         }
-
-        function changeName() {
-            const n = prompt("Enter New Name:");
-            if(n) {
-                userObj.updateProfile({displayName: n}).then(() => {
-                    document.getElementById('u-name').innerText = n;
-                    db.ref('users/' + userObj.uid).update({name: n});
-                });
-            }
-        }
-
-        function updatePFP() {
-            const file = event.target.files[0];
-            const reader = new FileReader();
-            reader.onload = e => document.getElementById('u-pfp').src = e.target.result;
-            reader.readAsDataURL(file);
-        }
     </script>
-        <div id="core-setup-popup" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:999999; overflow-y:auto; padding:20px; align-items:center; justify-content:center; backdrop-filter: blur(5px);">
-    <div style="background:white; width:100%; max-width:450px; border-radius:24px; overflow:hidden; position:relative; box-shadow:0 20px 50px rgba(0,0,0,0.3);">
-        
-        <div id="pop-banner-prev" style="height:120px; background:#5865F2; position:relative;">
-            <label for="banner-upload" style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.5); color:white; padding:5px 10px; border-radius:15px; font-size:12px; cursor:pointer;"><i class="fas fa-camera"></i> Edit Banner</label>
-            <input type="file" id="banner-upload" hidden onchange="previewImg(this, 'pop-banner-prev', true)">
-            
-            <div style="position:absolute; bottom:-40px; left:20px;">
-                <img id="pop-pfp-prev" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width:85px; height:85px; border-radius:50%; border:4px solid white; background:#eee; object-fit:cover;">
-                <label for="pfp-upload" style="position:absolute; bottom:0; right:0; background:white; padding:5px; border-radius:50%; box-shadow:0 2px 5px rgba(0,0,0,0.2); cursor:pointer;"><i class="fas fa-pen" style="font-size:10px;"></i></label>
-                <input type="file" id="pfp-upload" hidden onchange="previewImg(this, 'pop-pfp-prev', false)">
-            </div>
-        </div>
-
-        <div style="padding:50px 25px 25px;">
-            <h3 style="margin-bottom:15px; color:#313338;">Set Up Your CoreMMC Profile</h3>
-            
-            <input type="text" id="setup-username" placeholder="Choose Username" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; margin-bottom:12px;">
-            
-            <input type="tel" id="setup-phone" placeholder="Phone Number" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; margin-bottom:12px;">
-            <input type="text" id="setup-address" placeholder="Address (Optional)" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; margin-bottom:12px;">
-            
-            <div id="google-pass-fields">
-                <input type="password" id="setup-pass" placeholder="Create Hub Password" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; margin-bottom:12px;">
-                <input type="password" id="setup-conf" placeholder="Confirm Password" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; margin-bottom:20px;">
-            </div>
-
-            <button onclick="saveFinalProfile()" style="width:100%; padding:15px; background:#5865F2; color:white; border:none; border-radius:12px; font-weight:bold; cursor:pointer; font-size:16px;">Save & Start Chatting</button>
-        </div>
-    </div>
-</div>
-
-<style>
-    /* Black Screen Fix */
-    body, html { background: #ffffff !important; }
-    #core-app, #app { 
-        display: none; 
-        background: white !important; 
-        height: 100vh !important; 
-        position: fixed !important; 
-        width: 100% !important;
-        top: 0; left: 0;
-        z-index: 1000;
-    }
-    
-    /* App showing logic */
-    .show-app { display: flex !important; }
-    
-    /* Chat Visibility */
-    #chat-stream, #chat-area {
-        flex: 1 !important;
-        overflow-y: auto !important;
-        background: white !important;
-        display: flex !important;
-        flex-direction: column !important;
-        padding-bottom: 80px !important;
-    }
-</style>
-
-<script>
-    // 1. Unified Image Preview
-    function previewImg(input, targetId, isBanner) {
-        if (input.files && input.files[0]) {
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                if(isBanner) document.getElementById(targetId).style.backgroundImage = `url(${e.target.result})`;
-                else document.getElementById(targetId).src = e.target.result;
-            }
-            reader.readAsDataURL(input.files[0]);
-        }
-    }
-
-    // 2. Save Profile & Meta Data
-    function saveFinalProfile() {
-        const user = firebase.auth().currentUser;
-        const name = document.getElementById('setup-username').value;
-        const phone = document.getElementById('setup-phone').value;
-        const addr = document.getElementById('setup-address').value;
-        const pass = document.getElementById('setup-pass').value;
-
-        if(!name || !phone) return alert("Username and Phone are required!");
-
-        firebase.database().ref('users/' + user.uid).update({
-            username: name,
-            phone: phone,
-            address: addr,
-            setupDone: true,
-            email: user.email
-        }).then(() => {
-            user.updateProfile({ displayName: name });
-            alert("CoreMMC Profile Updated!");
-            document.getElementById('core-setup-popup').style.display = 'none';
-            launchCoreApp();
-        });
-    }
-
-    // 3. Auth Check & Redirect
-    firebase.auth().onAuthStateChanged(u => {
-        if(u) {
-            firebase.database().ref('users/' + u.uid).once('value', snap => {
-                const d = snap.val();
-                if(!d || !d.setupDone) {
-                    document.getElementById('core-setup-popup').style.display = 'flex';
-                    document.getElementById('auth-screen').style.display = 'none';
-                } else {
-                    launchCoreApp();
-                }
-            });
-        } else {
-            document.getElementById('auth-screen').style.display = 'flex';
-            document.getElementById('core-app').classList.remove('show-app');
-        }
-    });
-
-    function launchCoreApp() {
-        const app = document.getElementById('core-app') || document.getElementById('app');
-        if(app) {
-            app.classList.add('show-app');
-            document.getElementById('auth-screen').style.display = 'none';
-            // Trigger chat load
-            if(typeof startChatSync === "function") startChatSync();
-        }
-    }
-</script>
 </body>
 </html>
-
