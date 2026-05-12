@@ -250,6 +250,125 @@
             }).catch(e => alert(e.message));
         }
     </script>
+    <div id="main-app" style="display:none; height: 100vh; width: 100%; position: fixed; top:0; left:0; background: white; flex-direction: column; z-index: 10000;">
+    
+    <div style="height: 60px; border-bottom: 1px solid #eee; display: flex; align-items: center; padding: 0 20px; background: white; font-weight: bold; color: #1e293b; gap: 10px;">
+        <img src="https://i.ibb.co/KzF67sFZ/copilot-image-1761965106943.png" width="35" style="border-radius: 50%;">
+        <span>CoreMMC Hub</span>
+    </div>
+
+    <div id="content-panel" style="flex: 1; overflow-y: auto; background: #f8f9fa; display: flex; flex-direction: column;">
+        
+        <div id="sec-public" class="app-section" style="display: flex; flex-direction: column; height: 100%;">
+            <div id="chat-display" style="flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px;">
+                </div>
+            
+            <div style="padding: 15px; background: white; border-top: 1px solid #eee; display: flex; gap: 10px; padding-bottom: 25px;">
+                <input type="text" id="public-input" placeholder="Message CoreMMC..." style="flex:1; padding: 12px 20px; border: 1px solid #ddd; border-radius: 25px; outline: none; background: #f1f2f6;" onkeypress="if(event.key==='Enter')sendPublicMsg()">
+                <button onclick="sendPublicMsg()" style="width: 45px; height: 45px; border-radius: 50%; border: none; background: #3b82f6; color: white; cursor: pointer;">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="sec-dm" class="app-section" style="display: none; padding: 40px; text-align: center; color: #64748b;">
+            <i class="fas fa-user-shield" style="font-size: 50px; margin-bottom: 15px;"></i>
+            <h3>Private Messages</h3>
+            <p>Coming soon for verified clients.</p>
+        </div>
+
+        <div id="sec-profile" class="app-section" style="display: none; padding: 20px;">
+            <div style="background: white; border-radius: 20px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center;">
+                <img id="my-pfp" src="" style="width: 100px; height: 100px; border-radius: 50%; border: 4px solid #3b82f6; margin-bottom: 15px; object-fit: cover;">
+                <h2 id="my-name" style="color: #1e293b;">User</h2>
+                <p id="my-email" style="color: #64748b; font-size: 14px; margin-bottom: 20px;"></p>
+                
+                <button onclick="auth.signOut()" style="width: 100%; padding: 12px; background: #ef4444; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer;">
+                    <i class="fas fa-sign-out-alt"></i> Logout from Hub
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div style="height: 70px; background: white; border-top: 1px solid #eee; display: flex; align-items: center; justify-content: space-around;">
+        <div class="nav-btn active" onclick="switchTab('public', this)" style="text-align: center; cursor: pointer; color: #3b82f6;">
+            <i class="fas fa-comments" style="font-size: 20px;"></i>
+            <p style="font-size: 10px; margin-top: 4px; font-weight: bold;">Public</p>
+        </div>
+        <div class="nav-btn" onclick="switchTab('dm', this)" style="text-align: center; cursor: pointer; color: #94a3b8;">
+            <i class="fas fa-paper-plane" style="font-size: 20px;"></i>
+            <p style="font-size: 10px; margin-top: 4px; font-weight: bold;">DMs</p>
+        </div>
+        <div class="nav-btn" onclick="switchTab('profile', this)" style="text-align: center; cursor: pointer; color: #94a3b8;">
+            <i class="fas fa-user-circle" style="font-size: 20px;"></i>
+            <p style="font-size: 10px; margin-top: 4px; font-weight: bold;">Profile</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // 1. Auth Listener to show/hide App
+    auth.onAuthStateChanged(user => {
+        if(user) {
+            document.getElementById('main-app').style.display = 'flex';
+            document.getElementById('my-name').innerText = user.displayName || "Core Member";
+            document.getElementById('my-email').innerText = user.email;
+            document.getElementById('my-pfp').src = user.photoURL || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+            loadPublicChat();
+        } else {
+            document.getElementById('main-app').style.display = 'none';
+        }
+    });
+
+    // 2. Tab Switching Logic
+    function switchTab(tabId, el) {
+        document.querySelectorAll('.app-section').forEach(s => s.style.display = 'none');
+        document.querySelectorAll('.nav-btn').forEach(b => b.style.color = '#94a3b8');
+        
+        document.getElementById('sec-' + tabId).style.display = 'flex';
+        if(tabId === 'profile' || tabId === 'dm') document.getElementById('sec-' + tabId).style.flexDirection = 'column';
+        
+        el.style.color = '#3b82f6';
+    }
+
+    // 3. Public Chat Engine
+    function loadPublicChat() {
+        db.ref('public_messages').limitToLast(50).on('value', snap => {
+            const display = document.getElementById('chat-display');
+            display.innerHTML = "";
+            snap.forEach(child => {
+                const msg = child.val();
+                const isMe = msg.uid === auth.currentUser.uid;
+                
+                display.innerHTML += `
+                    <div style="display: flex; gap: 10px; align-self: ${isMe ? 'flex-end' : 'flex-start'}; max-width: 80%; flex-direction: ${isMe ? 'row-reverse' : 'row'}">
+                        <img src="${msg.pfp}" style="width: 30px; height: 30px; border-radius: 50%;">
+                        <div style="background: ${isMe ? '#3b82f6' : 'white'}; color: ${isMe ? 'white' : '#1e293b'}; padding: 10px 15px; border-radius: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                            <div style="font-size: 10px; font-weight: bold; margin-bottom: 4px; opacity: 0.8;">${msg.name}</div>
+                            <div style="font-size: 14px;">${msg.text}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            display.scrollTop = display.scrollHeight;
+        });
+    }
+
+    function sendPublicMsg() {
+        const inp = document.getElementById('public-input');
+        if(!inp.value.trim()) return;
+
+        db.ref('public_messages').push({
+            uid: auth.currentUser.uid,
+            name: auth.currentUser.displayName || "Core Member",
+            text: inp.value,
+            pfp: auth.currentUser.photoURL || "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+            timestamp: Date.now()
+        });
+        inp.value = "";
+    }
+</script>
 </body>
 </html>
 
