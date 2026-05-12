@@ -2,232 +2,202 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CoreMMC - Ultimate Hub</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CoreMMC Hub - Official</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { 
-            --discord-blurple: #5865F2; 
-            --sidebar-dark: #1e1f22; 
-            --chat-bg: #ffffff; 
-            --text-dark: #313338;
-            --glass: rgba(255, 255, 255, 0.1);
+        :root {
+            --primary: #5865F2;
+            --sidebar: #1e1f22;
+            --chat-bg: #ffffff;
+            --text-main: #313338;
+            --nav-bg: #f2f3f5;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
 
-        body, html { 
-            height: 100vh; 
-            width: 100vw; 
-            overflow: hidden; 
-            background: url('https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExamJlOHR5Y2Fod2s0ZWg2MzNuZzZqZXJjdTloeTJjZ2hrcTNpeTZ0ayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/skzEY0OczUGwhamSxk/giphy.gif') center/cover no-repeat;
+        body, html {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: #000;
         }
 
-        /* --- AUTH & REGISTER SYSTEM --- */
-        .auth-overlay {
+        /* --- LOADING SCREEN --- */
+        #loader {
             position: fixed; inset: 0; z-index: 9999;
-            background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(20px);
-            display: flex; justify-content: center; align-items: center;
+            background: #1e1f22; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; color: white;
         }
-
-        .auth-card {
-            background: white; color: var(--text-dark);
-            padding: 40px; border-radius: 24px; width: 90%; max-width: 420px;
-            text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        .spinner {
+            width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.1);
+            border-top: 5px solid var(--primary); border-radius: 50%;
+            animation: rotate 1s linear infinite; margin-bottom: 20px;
         }
+        @keyframes rotate { to { transform: rotate(360deg); } }
 
-        .auth-card h2 { margin-bottom: 20px; font-size: 28px; color: var(--discord-blurple); }
-        
-        .input-group { margin-bottom: 15px; text-align: left; }
-        .input-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #5c6066; }
-        .input-group input { 
-            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; 
-            background: #f2f3f5; outline: none; transition: 0.3s;
+        /* --- AUTH SYSTEM --- */
+        .auth-screen {
+            position: fixed; inset: 0; z-index: 9000;
+            background: url('https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExamJlOHR5Y2Fod2s0ZWg2MzNuZzZqZXJjdTloeTJjZ2hrcTNpeTZ0ayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/skzEY0OczUGwhamSxk/giphy.gif') center/cover;
+            display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);
         }
-        .input-group input:focus { border-color: var(--discord-blurple); }
-
-        .btn {
+        .auth-container {
+            background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 20px;
+            width: 90%; max-width: 400px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); text-align: center;
+        }
+        .auth-container h2 { color: var(--primary); margin-bottom: 25px; font-size: 24px; }
+        .auth-container input {
+            width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd;
+            border-radius: 8px; outline: none; background: #f9f9f9;
+        }
+        .auth-btn {
             width: 100%; padding: 14px; border: none; border-radius: 8px;
-            font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; font-size: 16px;
+            background: var(--primary); color: white; font-weight: bold;
+            cursor: pointer; transition: 0.2s; font-size: 16px;
         }
-        .btn-primary { background: var(--discord-blurple); color: white; }
-        .btn-primary:hover { background: #4752c4; }
-        .btn-google { background: #fff; color: #444; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .auth-btn:active { transform: scale(0.98); }
+        .switch-auth { margin-top: 20px; font-size: 14px; color: #555; cursor: pointer; }
 
-        /* --- SETUP PROFILE OVERLAY --- */
-        #setup-overlay { display: none; }
-        .upload-circle { 
-            width: 110px; height: 110px; border-radius: 50%; border: 3px dashed #ccc; 
-            margin: 20px auto; cursor: pointer; display: flex; align-items: center; justify-content: center;
-            overflow: hidden; background: #f9f9f9;
-        }
-        .upload-banner { 
-            width: 100%; height: 80px; border-radius: 12px; border: 3px dashed #ccc; 
-            margin: 15px 0; cursor: pointer; overflow: hidden; background: #f9f9f9;
+        /* --- MAIN APP LAYOUT --- */
+        #app {
+            display: none; height: 100vh; width: 100vw;
+            flex-direction: column; background: var(--nav-bg);
         }
 
-        /* --- MAIN APP INTERFACE --- */
-        #main-app { display: none; height: 100vh; width: 100vw; display: flex; flex-direction: column; background: #f2f3f5; }
+        .main-content { display: flex; flex: 1; overflow: hidden; }
 
-        .app-container { display: flex; flex: 1; overflow: hidden; }
-
-        /* Sidebar Style */
-        .sidebar { width: 72px; background: var(--sidebar-dark); display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 12px; }
-        .server-icon { 
-            width: 48px; height: 48px; background: #313338; border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; cursor: pointer; 
-            transition: 0.2s; color: #dbdee1; font-size: 20px;
+        /* Sidebar (Desktop) */
+        .sidebar {
+            width: 72px; background: var(--sidebar); display: flex;
+            flex-direction: column; align-items: center; padding-top: 15px; gap: 12px;
         }
-        .server-icon:hover, .server-icon.active { border-radius: 16px; background: var(--discord-blurple); color: white; }
+        .side-icon {
+            width: 48px; height: 48px; background: #313338; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: #dbdee1; font-size: 20px; cursor: pointer; transition: 0.2s;
+        }
+        .side-icon.active, .side-icon:hover { border-radius: 15px; background: var(--primary); color: white; }
 
-        /* Content Sections */
-        .content-area { flex: 1; display: flex; flex-direction: column; background: var(--chat-bg); position: relative; }
-        .section { display: none; flex: 1; flex-direction: column; height: 100%; }
+        /* Content Panel */
+        .view-panel { flex: 1; display: flex; flex-direction: column; background: var(--chat-bg); }
+        .section { display: none; flex: 1; flex-direction: column; }
         .section.active { display: flex; }
 
-        /* Chat Section */
-        .chat-header { height: 50px; border-bottom: 1px solid #e3e5e8; padding: 0 20px; display: flex; align-items: center; font-weight: bold; color: var(--text-dark); justify-content: space-between; }
+        /* --- PUBLIC CHAT UI --- */
+        .header { height: 50px; border-bottom: 1px solid #e3e5e8; display: flex; align-items: center; padding: 0 15px; font-weight: bold; color: #313338; }
         
-        #message-list { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; background: white; }
-        .message-item { display: flex; gap: 15px; }
-        .message-item img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; background: #eee; }
-        .message-content { flex: 1; }
-        .msg-info { display: flex; gap: 10px; align-items: baseline; margin-bottom: 4px; }
-        .msg-user { font-weight: bold; color: var(--text-dark); cursor: pointer; }
-        .msg-user:hover { text-decoration: underline; }
-        .msg-time { font-size: 11px; color: #949ba4; }
-        .msg-text { color: #313338; line-height: 1.4; word-break: break-word; }
-
-        .chat-input-container { padding: 20px; background: white; }
-        .chat-input-wrapper { background: #ebedef; border-radius: 8px; padding: 10px 15px; display: flex; gap: 15px; align-items: center; }
-        .chat-input-wrapper input { flex: 1; background: transparent; border: none; outline: none; color: #313338; font-size: 15px; }
-
-        /* Profile Section Styles */
-        .profile-container { padding: 40px; max-width: 600px; margin: 0 auto; width: 100%; }
-        .profile-header-card { background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; position: relative; }
-        .user-banner-view { width: 100%; height: 150px; background: var(--discord-blurple); background-size: cover; background-position: center; }
-        .user-pfp-view { width: 100px; height: 100px; border-radius: 50%; border: 6px solid white; position: absolute; top: 100px; left: 20px; background: #eee; object-fit: cover; }
-        .profile-info { padding: 60px 20px 20px; }
-        .profile-info h1 { font-size: 24px; color: var(--text-dark); }
+        #chat-flow { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; background: #fff; }
+        .chat-msg { display: flex; gap: 12px; align-items: flex-start; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Bottom Tab Navigation */
-        .bottom-nav { height: 65px; border-top: 1px solid #e3e5e8; background: #f8f9fa; display: flex; justify-content: space-around; align-items: center; }
-        .tab-btn { display: flex; flex-direction: column; align-items: center; color: #5c6066; cursor: pointer; transition: 0.2s; gap: 4px; font-size: 12px; }
-        .tab-btn i { font-size: 22px; }
-        .tab-btn.active { color: var(--discord-blurple); }
+        .chat-msg img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; background: #eee; }
+        .msg-body { flex: 1; }
+        .msg-meta { display: flex; align-items: baseline; gap: 8px; margin-bottom: 2px; }
+        .msg-user { font-weight: 700; color: #060607; font-size: 15px; }
+        .msg-time { font-size: 11px; color: #5c6066; }
+        .msg-txt { color: #2e3338; line-height: 1.4; word-wrap: break-word; font-size: 14.5px; }
 
-        /* Loader */
-        #main-loader { position: fixed; inset: 0; background: #313338; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .spinner { width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.1); border-top-color: var(--discord-blurple); border-radius: 50%; animation: spin 1s infinite linear; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .footer-input { padding: 15px; background: #fff; border-top: 1px solid #f0f0f0; }
+        .input-wrap { background: #ebedef; border-radius: 8px; padding: 10px 15px; display: flex; align-items: center; gap: 12px; }
+        .input-wrap input { flex: 1; background: transparent; border: none; outline: none; font-size: 15px; color: #313338; }
+        .send-btn { color: var(--primary); font-size: 20px; cursor: pointer; transition: 0.2s; }
+        .send-btn:hover { transform: scale(1.1); }
+
+        /* --- PROFILE VIEW --- */
+        .profile-box { flex: 1; overflow-y: auto; background: #f2f3f5; }
+        .banner { height: 160px; background: var(--primary); position: relative; }
+        .pfp-large { 
+            width: 100px; height: 100px; border: 6px solid #f2f3f5; border-radius: 50%;
+            position: absolute; bottom: -50px; left: 20px; background: #eee; object-fit: cover;
+        }
+        .profile-details { padding: 60px 20px 20px; }
+        .profile-details h1 { font-size: 24px; color: #060607; }
+        .action-card { background: white; margin-top: 20px; border-radius: 12px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+
+        /* --- BOTTOM NAVIGATION --- */
+        .bottom-nav { 
+            height: 65px; background: #ffffff; border-top: 1px solid #e3e5e8;
+            display: flex; justify-content: space-around; align-items: center;
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #5c6066; cursor: pointer; font-size: 11px; gap: 4px; }
+        .nav-item i { font-size: 22px; }
+        .nav-item.active { color: var(--primary); }
+
     </style>
 </head>
 <body>
 
-    <div id="main-loader">
+    <div id="loader">
         <div class="spinner"></div>
-        <p style="color: white; margin-top: 15px; font-weight: bold;">Loading CoreMMC...</p>
+        <p>Initializing CoreMMC...</p>
     </div>
 
-    <div id="auth-overlay" class="auth-overlay" style="display:none;">
-        <div class="auth-card" id="login-view">
-            <img src="https://i.ibb.co/KzF67sFZ/copilot-image-1761965106943.png" width="80" style="border-radius:50%; margin-bottom:10px;">
-            <h2>Welcome Back</h2>
-            <button class="btn btn-google" onclick="loginWithGoogle()">
-                <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="18"> Continue with Google
-            </button>
-            <div style="margin: 20px 0; color: #888; font-size: 12px;">OR EMAIL</div>
-            <div class="input-group">
-                <label>EMAIL</label>
-                <input type="email" id="login-email">
-            </div>
-            <div class="input-group">
-                <label>PASSWORD</label>
-                <input type="password" id="login-pass">
-            </div>
-            <button class="btn btn-primary" onclick="loginWithEmail()">Log In</button>
-            <p style="margin-top:20px; font-size:14px;">Need an account? <a href="#" onclick="toggleAuth('reg')" style="color:var(--discord-blurple)">Register</a></p>
-        </div>
-
-        <div class="auth-card" id="reg-view" style="display:none;">
+    <div id="auth-screen" class="auth-screen" style="display:none;">
+        <div class="auth-container" id="register-box">
             <h2>Create Account</h2>
-            <div class="input-group">
-                <label>DISPLAY NAME</label>
-                <input type="text" id="reg-name" placeholder="Username">
-            </div>
-            <div class="input-group">
-                <label>EMAIL</label>
-                <input type="email" id="reg-email">
-            </div>
-            <div class="input-group">
-                <label>PASSWORD</label>
-                <input type="password" id="reg-pass">
-            </div>
-            <button class="btn btn-primary" onclick="handleRegister()">Sign Up</button>
-            <p style="margin-top:20px; font-size:14px;"><a href="#" onclick="toggleAuth('log')" style="color:var(--discord-blurple)">Already have an account?</a></p>
+            <input type="text" id="reg-name" placeholder="Full Name">
+            <input type="email" id="reg-email" placeholder="Email Address">
+            <input type="password" id="reg-pass" placeholder="Create Password">
+            <button class="auth-btn" onclick="handleRegister()">Sign Up & Start Chat</button>
+            <p class="switch-auth" onclick="toggleAuth('login')">Already have an account? Login</p>
+        </div>
+        <div class="auth-container" id="login-box" style="display:none;">
+            <h2>Welcome Back</h2>
+            <button class="auth-btn" style="background:#fff; color:#444; border:1px solid #ddd; margin-bottom:15px; display:flex; align-items:center; justify-content:center; gap:10px;" onclick="googleSignIn()">
+                <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="18"> Google Login
+            </button>
+            <input type="email" id="log-email" placeholder="Email Address">
+            <input type="password" id="log-pass" placeholder="Password">
+            <button class="auth-btn" onclick="handleLogin()">Log In</button>
+            <p class="switch-auth" onclick="toggleAuth('reg')">New here? Create an account</p>
         </div>
     </div>
 
-    <div id="setup-overlay" class="auth-overlay" style="display:none;">
-        <div class="auth-card">
-            <h2>Customise Your Profile</h2>
-            <div class="upload-circle" onclick="document.getElementById('pfp-input').click()" id="pfp-box">
-                <i class="fas fa-camera" style="font-size: 24px; color: #aaa;"></i>
-            </div>
-            <input type="file" id="pfp-input" hidden accept="image/*" onchange="previewImg(this, 'pfp-box')">
-
-            <div class="upload-banner" onclick="document.getElementById('banner-input').click()" id="banner-box">
-                <span style="color: #aaa; font-size: 12px;">Add Banner</span>
-            </div>
-            <input type="file" id="banner-input" hidden accept="image/*" onchange="previewImg(this, 'banner-box')">
-
-            <button class="btn btn-primary" onclick="completeSetup()">Finish & Chat</button>
-            <p style="margin-top:15px; cursor:pointer; font-size:13px; color:#888;" onclick="completeSetup()">Skip for now</p>
-        </div>
-    </div>
-
-    <div id="main-app">
-        <div class="app-container">
+    <div id="app">
+        <div class="main-content">
             <div class="sidebar">
-                <div class="server-icon active" onclick="switchSection('public', this)" title="Public Chat"><i class="fas fa-globe"></i></div>
-                <div class="server-icon" onclick="switchSection('dm', this)" title="Private DMs"><i class="fas fa-comment-dots"></i></div>
+                <div class="side-icon active" onclick="switchTab('public', this)"><i class="fas fa-globe"></i></div>
+                <div class="side-icon" onclick="switchTab('dm', this)"><i class="fas fa-comment-dots"></i></div>
+                <div class="side-icon" onclick="switchTab('profile', this)"><i class="fas fa-user"></i></div>
             </div>
 
-            <div class="content-area">
+            <div class="view-panel">
                 <div id="sec-public" class="section active">
-                    <div class="chat-header">
-                        <span># public-chat</span>
-                        <i class="fas fa-users" style="color: #80848e;"></i>
-                    </div>
-                    <div id="message-list">
-                        </div>
-                    <div class="chat-input-container">
-                        <div class="chat-input-wrapper">
-                            <i class="fas fa-plus-circle" style="color: #b5bac1; font-size: 20px; cursor: pointer;"></i>
-                            <input type="text" id="chat-msg-input" placeholder="Message #public-chat" onkeypress="handleEnter(event)">
-                            <i class="fas fa-paper-plane" style="color: var(--discord-blurple); cursor: pointer;" onclick="sendMessage()"></i>
+                    <div class="header"><span># public-chat</span></div>
+                    <div id="chat-flow"></div>
+                    <div class="footer-input">
+                        <div class="input-wrap">
+                            <input type="text" id="chat-input" placeholder="Type a message..." onkeypress="handleKey(event)">
+                            <i class="fas fa-paper-plane send-btn" onclick="sendPublicMsg()"></i>
                         </div>
                     </div>
                 </div>
 
                 <div id="sec-dm" class="section">
-                    <div class="chat-header"><span>Direct Messages</span></div>
-                    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; color:#5c6066;">
-                        <i class="fas fa-user-friends" style="font-size: 40px; margin-bottom:10px;"></i>
-                        <p>No active conversations yet.</p>
+                    <div class="header"><span>Direct Messages</span></div>
+                    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#888;">
+                        <i class="fas fa-user-lock" style="font-size: 40px; margin-bottom:10px;"></i>
+                        <p>Private messages are secure & end-to-end.</p>
                     </div>
                 </div>
 
                 <div id="sec-profile" class="section">
-                    <div class="chat-header"><span>User Settings</span></div>
-                    <div class="profile-container">
-                        <div class="profile-header-card">
-                            <div class="user-banner-view" id="final-banner"></div>
-                            <img src="" id="final-pfp" class="user-pfp-view">
-                            <div class="profile-info">
-                                <h1 id="final-name">User</h1>
-                                <p style="color:#5c6066; margin-top:5px;">CoreMMC Verified Member</p>
-                                <button class="btn btn-primary" style="max-width:120px; margin-top:20px;" onclick="logOut()">Log Out</button>
+                    <div class="profile-box">
+                        <div class="banner" id="user-banner">
+                            <label for="banner-upload" style="position:absolute; right:10px; top:10px; background:rgba(0,0,0,0.5); padding:8px; border-radius:50%; cursor:pointer;"><i class="fas fa-camera" style="color:white;"></i></label>
+                            <input type="file" id="banner-upload" hidden onchange="updateImage('banner')">
+                            <img src="" id="display-pfp" class="pfp-large">
+                            <label for="pfp-upload" style="position:absolute; bottom:-45px; left:85px; background:#fff; padding:5px; border-radius:50%; cursor:pointer; border:1px solid #ddd;"><i class="fas fa-pen" style="font-size:12px;"></i></label>
+                            <input type="file" id="pfp-upload" hidden onchange="updateImage('pfp')">
+                        </div>
+                        <div class="profile-details">
+                            <h1 id="display-name">Username</h1>
+                            <p style="color:#5c6066;">Status: Online</p>
+                            
+                            <div class="action-card">
+                                <h3>Account Settings</h3>
+                                <button class="auth-btn" style="background:#ed4245; margin-top:15px;" onclick="logout()">Logout</button>
                             </div>
                         </div>
                     </div>
@@ -236,27 +206,17 @@
         </div>
 
         <div class="bottom-nav">
-            <div class="tab-btn active" onclick="switchSection('public', this)">
-                <i class="fas fa-comments"></i>
-                <span>Chat</span>
-            </div>
-            <div class="tab-btn" onclick="switchSection('dm', this)">
-                <i class="fas fa-user-friends"></i>
-                <span>Friends</span>
-            </div>
-            <div class="tab-btn" onclick="switchSection('profile', this)">
-                <i class="fas fa-user-circle"></i>
-                <span>Profile</span>
-            </div>
+            <div class="nav-item active" onclick="switchTab('public', this)"><i class="fas fa-comments"></i><span>Public</span></div>
+            <div class="nav-item" onclick="switchTab('dm', this)"><i class="fas fa-user-friends"></i><span>DMs</span></div>
+            <div class="nav-item" onclick="switchTab('profile', this)"><i class="fas fa-user-circle"></i><span>Profile</span></div>
         </div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
 
     <script>
-        // --- Firebase Configuration (Using your credentials) ---
         const firebaseConfig = {
             apiKey: "AIzaSyDNwc4Ktuq-v5VX1ezzCNfK_sJmbFs2_x0",
             authDomain: "coremmc-hosting.firebaseapp.com",
@@ -271,154 +231,113 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
-        let userData = null;
+        let user = null;
 
-        // --- SESSION PERSISTENCE (Main Logic) ---
-        // Ye check karta hai ki user pehle se login hai ya nahi
-        auth.onAuthStateChanged(user => {
-            document.getElementById('main-loader').style.display = 'none';
-            if (user) {
-                userData = user;
-                // Session hai, direct chat dikhao
-                showApp();
+        // --- SESSION PERSISTENCE (Login Fix) ---
+        auth.onAuthStateChanged(u => {
+            document.getElementById('loader').style.display = 'none';
+            if (u) {
+                user = u;
+                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('app').style.display = 'flex';
+                initApp();
             } else {
-                // Session nahi hai, login dikhao
-                document.getElementById('auth-overlay').style.display = 'flex';
-                document.getElementById('main-app').style.display = 'none';
+                document.getElementById('auth-screen').style.display = 'flex';
+                document.getElementById('app').style.display = 'none';
             }
         });
 
-        // --- Authentication Functions ---
+        // --- AUTH LOGIC ---
         function toggleAuth(mode) {
-            document.getElementById('login-view').style.display = mode === 'reg' ? 'none' : 'block';
-            document.getElementById('reg-view').style.display = mode === 'reg' ? 'block' : 'none';
-        }
-
-        function loginWithGoogle() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).catch(err => alert(err.message));
+            document.getElementById('register-box').style.display = mode === 'reg' ? 'block' : 'none';
+            document.getElementById('login-box').style.display = mode === 'reg' ? 'none' : 'block';
         }
 
         function handleRegister() {
-            const email = document.getElementById('reg-email').value;
-            const pass = document.getElementById('reg-pass').value;
-            const name = document.getElementById('reg-name').value;
+            const n = document.getElementById('reg-name').value;
+            const e = document.getElementById('reg-email').value;
+            const p = document.getElementById('reg-pass').value;
+            if(!n || !e || !p) return alert("Fill everything!");
 
-            if(!email || !pass || !name) return alert("Please fill all fields!");
-
-            auth.createUserWithEmailAndPassword(email, pass)
-                .then((res) => {
-                    res.user.updateProfile({ displayName: name });
-                    document.getElementById('auth-overlay').style.display = 'none';
-                    document.getElementById('setup-overlay').style.display = 'flex';
-                })
-                .catch(err => alert(err.message));
+            auth.createUserWithEmailAndPassword(e, p).then(res => {
+                res.user.updateProfile({ displayName: n });
+                // Redirect will happen automatically via onAuthStateChanged
+            }).catch(err => alert(err.message));
         }
 
-        function loginWithEmail() {
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-pass').value;
-            auth.signInWithEmailAndPassword(email, pass).catch(err => alert(err.message));
+        function handleLogin() {
+            const e = document.getElementById('log-email').value;
+            const p = document.getElementById('log-pass').value;
+            auth.signInWithEmailAndPassword(e, p).catch(err => alert(err.message));
         }
 
-        function completeSetup() {
-            document.getElementById('setup-overlay').style.display = 'none';
-            showApp();
+        function googleSignIn() {
+            auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
         }
 
-        function logOut() {
-            if(confirm("Are you sure you want to log out?")) {
-                auth.signOut();
-            }
+        function logout() {
+            if(confirm("Logout?")) auth.signOut();
         }
 
-        // --- UI & Navigation ---
-        function showApp() {
-            document.getElementById('auth-overlay').style.display = 'none';
-            document.getElementById('main-app').style.display = 'flex';
-            
-            // Profile data update
-            document.getElementById('final-name').innerText = userData.displayName || "Core Member";
-            document.getElementById('final-pfp').src = userData.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-            
-            loadChatMessages();
+        // --- CORE APP LOGIC ---
+        function initApp() {
+            document.getElementById('display-name').innerText = user.displayName || "Core Member";
+            document.getElementById('display-pfp').src = user.photoURL || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+            loadMessages();
         }
 
-        function switchSection(secId, el) {
-            // Hide all sections
+        function switchTab(id, el) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            // Remove active from all nav items
-            document.querySelectorAll('.server-icon, .tab-btn').forEach(i => i.classList.remove('active'));
-            
-            // Show target
-            document.getElementById('sec-' + secId).classList.add('active');
+            document.querySelectorAll('.nav-item, .side-icon').forEach(i => i.classList.remove('active'));
+            document.getElementById('sec-' + id).classList.add('active');
             el.classList.add('active');
         }
 
-        function previewImg(input, boxId) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    const box = document.getElementById(boxId);
-                    if(boxId === 'pfp-box') {
-                        box.innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover;">`;
-                        document.getElementById('final-pfp').src = e.target.result;
-                    } else {
-                        box.style.background = `url(${e.target.result}) center/cover`;
-                        document.getElementById('final-banner').style.backgroundImage = `url(${e.target.result})`;
-                    }
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
+        function handleKey(e) { if(e.key === 'Enter') sendPublicMsg(); }
 
-        // --- Chat System Logic ---
-        function handleEnter(e) {
-            if(e.key === 'Enter') sendMessage();
-        }
+        function sendPublicMsg() {
+            const input = document.getElementById('chat-input');
+            const txt = input.value.trim();
+            if(!txt) return;
 
-        function sendMessage() {
-            const input = document.getElementById('chat-msg-input');
-            const text = input.value.trim();
-            if(!text) return;
-
-            const msgData = {
-                uid: userData.uid,
-                name: userData.displayName || "Anonymous",
-                pfp: userData.photoURL || 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
-                text: text,
-                timestamp: Date.now()
-            };
-
-            db.ref('public_chat').push(msgData);
+            db.ref('public_chat').push({
+                u: user.displayName || "User",
+                t: txt,
+                p: user.photoURL || "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+                time: Date.now()
+            });
             input.value = "";
         }
 
-        function loadChatMessages() {
-            const chatBox = document.getElementById('message-list');
+        function loadMessages() {
+            const flow = document.getElementById('chat-flow');
             db.ref('public_chat').limitToLast(50).on('value', snap => {
-                chatBox.innerHTML = "";
+                flow.innerHTML = "";
                 snap.forEach(child => {
                     const m = child.val();
-                    const date = new Date(m.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    
-                    chatBox.innerHTML += `
-                        <div class="message-item">
-                            <img src="${m.pfp}">
-                            <div class="message-content">
-                                <div class="msg-info">
-                                    <span class="msg-user">${m.name}</span>
-                                    <span class="msg-time">${date}</span>
-                                </div>
-                                <div class="msg-text">${m.text}</div>
+                    const d = new Date(m.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                    flow.innerHTML += `
+                        <div class="chat-msg">
+                            <img src="${m.p}">
+                            <div class="msg-body">
+                                <div class="msg-meta"><span class="msg-user">${m.u}</span><span class="msg-time">${d}</span></div>
+                                <div class="msg-txt">${m.t}</div>
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                 });
-                chatBox.scrollTop = chatBox.scrollHeight;
+                flow.scrollTop = flow.scrollHeight;
             });
+        }
+
+        function updateImage(type) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                if(type === 'pfp') document.getElementById('display-pfp').src = e.target.result;
+                else document.getElementById('user-banner').style.backgroundImage = `url(${e.target.result})`;
+            };
+            reader.readAsDataURL(file);
         }
     </script>
 </body>
 </html>
-        
