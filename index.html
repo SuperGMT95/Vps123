@@ -2,115 +2,157 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CoreMMC Hub - Fixed</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoreMMC - Chat & Hosting</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primary: #5865F2; --bg: #ffffff; --text: #313338; }
+        :root {
+            --bg-dark: #313338;
+            --sidebar-dark: #2b2d31;
+            --nav-dark: #1e1f22;
+            --text-main: #dbdee1;
+            --accent: #5865f2;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); height: 100vh; overflow: hidden; }
+
+        /* Auth Screen */
+        #auth-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExamJlOHR5Y2Fod2s0ZWg2MzNuZzZqZXJjdTloeTJjZ2hrcTNpeTZ0ayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/skzEY0OczUGwhamSxk/giphy.gif') center/cover;
+            display: flex; justify-content: center; align-items: center; z-index: 1000;
+        }
+
+        .card {
+            background: rgba(43, 45, 49, 0.95); padding: 30px; border-radius: 8px;
+            width: 400px; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        }
+
+        input {
+            width: 100%; padding: 10px; margin: 10px 0; background: #1e1f22;
+            border: 1px solid #1e1f22; color: white; border-radius: 4px;
+        }
+
+        .btn {
+            width: 100%; padding: 10px; border: none; border-radius: 4px;
+            cursor: pointer; font-weight: bold; transition: 0.2s; margin-top: 10px;
+        }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-google { background: white; color: black; margin-top: 15px; }
+
+        /* Main Chat Layout */
+        #app-interface { display: none; height: 100vh; grid-template-columns: 72px 240px 1fr; }
+
+        .server-bar { background: var(--nav-dark); display: flex; flex-direction: column; align-items: center; padding: 12px 0; }
+        .server-icon { width: 48px; height: 48px; background: #313338; border-radius: 50%; margin-bottom: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+        .server-icon:hover { border-radius: 15px; background: var(--accent); }
+
+        .sidebar { background: var(--sidebar-dark); display: flex; flex-direction: column; }
+        .sidebar-header { padding: 15px; font-weight: bold; border-bottom: 1px solid #232428; }
+        .channel-list { padding: 10px; flex-grow: 1; }
+        .channel-item { padding: 8px; border-radius: 4px; cursor: pointer; margin-bottom: 2px; color: #949ba4; }
+        .channel-item:hover, .active-ch { background: #3f4147; color: white; }
+
+        .chat-area { display: flex; flex-direction: column; background: var(--bg-dark); }
+        .chat-header { height: 48px; border-bottom: 1px solid #232428; display: flex; align-items: center; padding: 0 15px; font-weight: bold; }
+        #messages { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
         
-        /* White Screen Prevention */
-        body, html { height: 100vh; width: 100vw; overflow: hidden; background: #ffffff; }
+        .msg-container { display: flex; gap: 15px; }
+        .msg-avatar { width: 40px; height: 40px; border-radius: 50%; background: #5865f2; }
+        .msg-content { display: flex; flex-direction: column; }
+        .msg-user { font-weight: bold; font-size: 0.9rem; color: white; }
+        .msg-text { font-size: 0.95rem; color: var(--text-main); margin-top: 2px; }
 
-        /* --- LOADER --- */
-        #main-loader { position: fixed; inset: 0; background: #1e1f22; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
-        .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s infinite linear; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .input-box { padding: 20px; }
+        .input-wrapper { background: #383a40; padding: 10px 15px; border-radius: 8px; display: flex; }
+        .input-wrapper input { background: transparent; border: none; margin: 0; }
 
-        /* --- AUTH & SETUP POPUPS --- */
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9000; display: none; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
-        .card { background: white; width: 100%; max-width: 420px; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
-        .input-box { width: 90%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; outline: none; background: #f9f9f9; }
-        .btn-main { width: 90%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin: 10px 0; }
-
-        /* --- BANNER & PFP --- */
-        .setup-banner { height: 100px; background: var(--primary); position: relative; background-size: cover; background-position: center; }
-        .setup-pfp-wrap { position: absolute; bottom: -35px; left: 20px; }
-        .setup-pfp { width: 75px; height: 75px; border-radius: 50%; border: 4px solid white; background: #eee; object-fit: cover; }
-
-        /* --- APP UI (CRITICAL FIX) --- */
-        #app { display: none; height: 100vh; width: 100%; flex-direction: column; background: #fff; position: fixed; top:0; left:0; }
-        .header { height: 55px; border-bottom: 1px solid #eee; display: flex; align-items: center; padding: 0 15px; font-weight: bold; background: #fff; }
-        
-        #chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; background: #fff !important; }
-        .msg-bubble { display: flex; gap: 10px; margin-bottom: 5px; }
-        .msg-bubble img { width: 35px; height: 35px; border-radius: 50%; }
-        .msg-content { background: #f1f2f6; padding: 8px 12px; border-radius: 0 15px 15px 15px; max-width: 75%; font-size: 14px; }
-        
-        .input-bar { padding: 15px; border-top: 1px solid #eee; display: flex; gap: 10px; background: #fff; padding-bottom: 30px; }
-        .input-bar input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 25px; outline: none; }
-
-        .nav { height: 70px; border-top: 1px solid #eee; display: flex; align-items: center; background: #fff; }
-        .nav-item { flex: 1; text-align: center; color: #888; cursor: pointer; font-size: 12px; }
-        .nav-item.active { color: var(--primary); }
+        /* Profile Modal */
+        #profile-modal {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #1e1f22; width: 300px; border-radius: 15px; overflow: hidden; z-index: 2000;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
+        .banner { height: 60px; background: var(--accent); }
+        .profile-info { padding: 40px 15px 15px; position: relative; text-align: center; }
+        .p-avatar { width: 80px; height: 80px; border-radius: 50%; border: 6px solid #1e1f22; position: absolute; top: -40px; left: 15px; background: #5865f2;}
     </style>
 </head>
 <body>
 
-    <div id="main-loader"><div class="spinner"></div></div>
+    <div id="auth-screen">
+        <div class="card" id="login-form">
+            <h2>CoreMMC Hosting</h2>
+            <p style="color: #b5bac1; font-size: 14px; margin: 8px 0 20px;">Welcome back!</p>
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="password" placeholder="Password">
+            <button class="btn btn-primary" onclick="login()">Login</button>
+            <button class="btn btn-google" onclick="googleLogin()">
+                <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="16"> Continue with Google
+            </button>
+            <p style="margin-top: 15px; font-size: 13px;">Need an account? <span style="color: #00a8fc; cursor:pointer;" onclick="toggleAuth()">Register</span></p>
+        </div>
 
-    <div id="auth-screen" class="overlay" style="display: flex;">
-        <div class="card" style="padding: 30px;">
-            <img src="https://i.ibb.co/KzF67sFZ/copilot-image-1761965106943.png" width="80" style="border-radius: 50%;">
-            <h2 id="auth-title" style="margin: 15px 0;">CoreMMC Login</h2>
-            <div id="login-fields">
-                <input type="email" id="l-email" class="input-box" placeholder="Email">
-                <input type="password" id="l-pass" class="input-box" placeholder="Password">
-                <button class="btn-main" onclick="handleLogin()">Login</button>
-                <button class="btn-main" style="background:#fff; color:#444; border:1px solid #ddd;" onclick="googleAuth()">Google Login</button>
-                <p style="margin-top:15px; color:var(--primary); cursor:pointer;" onclick="toggleAuth('reg')">New? Register</p>
-            </div>
-            <div id="reg-fields" style="display:none;">
-                <input type="email" id="r-email" class="input-box" placeholder="Email">
-                <input type="password" id="r-pass" class="input-box" placeholder="Password">
-                <button class="btn-main" onclick="handleRegister()">Next: Setup Profile</button>
-                <p style="margin-top:15px; color:var(--primary); cursor:pointer;" onclick="toggleAuth('login')">Back to Login</p>
-            </div>
+        <div class="card" id="register-form" style="display:none;">
+            <h2>Create Account</h2>
+            <input type="text" id="reg-user" placeholder="Username">
+            <input type="email" id="reg-email" placeholder="Email">
+            <input type="password" id="reg-pass" placeholder="Password">
+            <button class="btn btn-primary" onclick="register()">Register</button>
+            <p style="margin-top: 15px; font-size: 13px;">Already have an account? <span style="color: #00a8fc; cursor:pointer;" onclick="toggleAuth()">Login</span></p>
         </div>
     </div>
 
-    <div id="setup-popup" class="overlay">
-        <div class="card">
-            <div id="set-banner-prev" class="setup-banner">
-                <label for="b-up" style="position:absolute; top:5px; right:5px; background:rgba(0,0,0,0.5); color:white; padding:4px 8px; border-radius:10px; font-size:10px; cursor:pointer;">Edit Banner</label>
-                <input type="file" id="b-up" hidden onchange="imgPrev(this,'set-banner-prev',true)">
-                <div class="setup-pfp-wrap">
-                    <img id="set-pfp-prev" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="setup-pfp">
-                    <label for="p-up" style="position:absolute; bottom:0; right:0; background:white; border-radius:50%; padding:4px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.2);"><i class="fas fa-camera" style="font-size:10px;"></i></label>
-                    <input type="file" id="p-up" hidden onchange="imgPrev(this,'set-pfp-prev',false)">
+    <div id="app-interface">
+        <div class="server-bar">
+            <div class="server-icon"><i class="fab fa-discord fa-lg"></i></div>
+            <div style="width: 32px; height: 2px; background: #35363c; margin: 8px 0;"></div>
+            <div class="server-icon" style="border-radius: 15px; background: var(--accent);">C</div>
+        </div>
+
+        <div class="sidebar">
+            <div class="sidebar-header">CoreMMC Hosting</div>
+            <div class="channel-list">
+                <div class="channel-item active-ch"><i class="fas fa-hashtag"></i> public-chat</div>
+                <div class="channel-item"><i class="fas fa-hashtag"></i> announcements</div>
+                <div style="margin-top: 20px; font-size: 12px; font-weight: bold; color: #949ba4; padding-left: 8px;">DIRECT MESSAGES</div>
+                <div class="channel-item"><i class="fas fa-user"></i> CoreMMC Bot</div>
+            </div>
+            <div style="background: #232428; padding: 10px; display: flex; align-items: center; gap: 10px; cursor:pointer;" onclick="showProfile()">
+                <div id="user-pfp" class="msg-avatar" style="width:32px; height:32px;"></div>
+                <div style="font-size: 13px;">
+                    <b id="user-display">User</b><br><span style="color:#b5bac1; font-size:11px;">#0001</span>
                 </div>
             </div>
-            <div style="padding: 45px 20px 20px;">
-                <h3>Profile Settings</h3>
-                <input type="text" id="s-name" class="input-box" placeholder="Choose Username">
-                <input type="tel" id="s-phone" class="input-box" placeholder="Phone Number">
-                <input type="text" id="s-addr" class="input-box" placeholder="Address (Optional)">
-                <button class="btn-main" onclick="saveProfile()">Finish & Enter</button>
+        </div>
+
+        <div class="chat-area">
+            <div class="chat-header"><i class="fas fa-hashtag" style="margin-right: 10px; color: #80848e;"></i> public-chat</div>
+            <div id="messages">
+                </div>
+            <div class="input-box">
+                <div class="input-wrapper">
+                    <input type="text" id="chat-input" placeholder="Message #public-chat" onkeypress="if(event.key === 'Enter') sendMessage()">
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="app">
-        <div class="header">
-            <img src="https://i.ibb.co/KzF67sFZ/copilot-image-1761965106943.png" width="30" style="border-radius:50%; margin-right:10px;">
-            CoreMMC Hub
-        </div>
-        <div id="sec-chat" class="section active" style="display:flex; flex-direction:column; flex:1; overflow:hidden;">
-            <div id="chat-area"></div>
-            <div class="input-bar">
-                <input type="text" id="msg-in" placeholder="Type a message..." onkeypress="if(event.key==='Enter')sendMsg()">
-                <button onclick="sendMsg()" style="background:var(--primary); color:white; border:none; width:45px; height:45px; border-radius:50%;"><i class="fas fa-paper-plane"></i></button>
-            </div>
-        </div>
-        <div class="nav">
-            <div class="nav-item active"><i class="fas fa-comments"></i><p>Chat</p></div>
-            <div class="nav-item" onclick="auth.signOut()"><i class="fas fa-sign-out-alt"></i><p>Logout</p></div>
+    <div id="profile-modal" onclick="this.style.display='none'">
+        <div class="banner"></div>
+        <div class="profile-info">
+            <div id="modal-pfp" class="p-avatar"></div>
+            <h3 id="modal-name">Username</h3>
+            <p style="color: #b5bac1; font-size: 12px;">CoreMMC Member</p>
+            <hr style="margin: 15px 0; border: 0; border-top: 1px solid #35363c;">
+            <button class="btn btn-primary" onclick="firebase.auth().signOut()">Logout</button>
         </div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-firestore-compat.js"></script>
 
     <script>
         const firebaseConfig = {
@@ -119,99 +161,98 @@
             projectId: "coremmc-hosting",
             storageBucket: "coremmc-hosting.firebasestorage.app",
             messagingSenderId: "483642646077",
-            appId: "1:483642646077:web:1e72697f704664e5af5454",
-            databaseURL: "https://coremmc-chat-default-rtdb.firebaseio.com"
+            appId: "1:483642646077:web:1e72697f704664e5af5454"
         };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth(), db = firebase.database();
-        let currUser = null;
 
-        // Logic to fix white screen and check registration
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // --- Auth Logic ---
+        function toggleAuth() {
+            const login = document.getElementById('login-form');
+            const reg = document.getElementById('register-form');
+            login.style.display = login.style.display === 'none' ? 'block' : 'none';
+            reg.style.display = reg.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function register() {
+            const email = document.getElementById('reg-email').value;
+            const pass = document.getElementById('reg-pass').value;
+            const user = document.getElementById('reg-user').value;
+            try {
+                const res = await auth.createUserWithEmailAndPassword(email, pass);
+                await res.user.updateProfile({ displayName: user });
+                location.reload();
+            } catch (e) { alert(e.message); }
+        }
+
+        async function login() {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            try { await auth.signInWithEmailAndPassword(email, pass); } catch (e) { alert(e.message); }
+        }
+
+        function googleLogin() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider);
+        }
+
+        // --- App Logic ---
         auth.onAuthStateChanged(user => {
-            document.getElementById('main-loader').style.display = 'none';
-            if(user) {
-                currUser = user;
-                db.ref('users/' + user.uid).once('value', snap => {
-                    const d = snap.val();
-                    if(!d || !d.setupDone) {
-                        document.getElementById('auth-screen').style.display = 'none';
-                        document.getElementById('setup-popup').style.display = 'flex';
-                    } else {
-                        showApp();
-                    }
-                });
+            if (user) {
+                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('app-interface').style.display = 'grid';
+                document.getElementById('user-display').innerText = user.displayName || user.email;
+                const pfp = user.photoURL || 'https://ui-avatars.com/api/?name=' + user.displayName;
+                document.getElementById('user-pfp').style.background = `url('${pfp}') center/cover`;
+                loadMessages();
             } else {
-                document.getElementById('app').style.display = 'none';
                 document.getElementById('auth-screen').style.display = 'flex';
+                document.getElementById('app-interface').style.display = 'none';
             }
         });
 
-        function showApp() {
-            document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('setup-popup').style.display = 'none';
-            document.getElementById('app').style.display = 'flex';
-            loadChat();
+        function showProfile() {
+            const user = auth.currentUser;
+            const pfp = user.photoURL || 'https://ui-avatars.com/api/?name=' + user.displayName;
+            document.getElementById('modal-name').innerText = user.displayName;
+            document.getElementById('modal-pfp').style.background = `url('${pfp}') center/cover`;
+            document.getElementById('profile-modal').style.display = 'block';
         }
 
-        function imgPrev(input, tid, isB) {
-            if (input.files && input.files[0]) {
-                var r = new FileReader();
-                r.onload = e => {
-                    if(isB) document.getElementById(tid).style.backgroundImage = `url(${e.target.result})`;
-                    else document.getElementById(tid).src = e.target.result;
-                };
-                r.readAsDataURL(input.files[0]);
-            }
-        }
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            if (!input.value.trim()) return;
 
-        function saveProfile() {
-            const n = document.getElementById('s-name').value, p = document.getElementById('s-phone').value;
-            if(!n || !p) return alert("Username & Phone required!");
-            db.ref('users/' + currUser.uid).update({
-                username: n, phone: p, address: document.getElementById('s-addr').value, setupDone: true
-            }).then(() => {
-                currUser.updateProfile({ displayName: n });
-                showApp();
+            await db.collection("public-messages").add({
+                text: input.value,
+                uid: auth.currentUser.uid,
+                userName: auth.currentUser.displayName,
+                photo: auth.currentUser.photoURL || 'https://ui-avatars.com/api/?name=' + auth.currentUser.displayName,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
+            input.value = "";
         }
 
-        function toggleAuth(m) {
-            document.getElementById('login-fields').style.display = m === 'reg' ? 'none' : 'block';
-            document.getElementById('reg-fields').style.display = m === 'reg' ? 'block' : 'none';
-        }
-
-        function handleLogin() {
-            auth.signInWithEmailAndPassword(document.getElementById('l-email').value, document.getElementById('l-pass').value).catch(e => alert(e.message));
-        }
-
-        function handleRegister() {
-            auth.createUserWithEmailAndPassword(document.getElementById('r-email').value, document.getElementById('r-pass').value).catch(e => alert(e.message));
-        }
-
-        function googleAuth() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
-
-        function loadChat() {
-            db.ref('public_chat').limitToLast(50).on('value', snap => {
-                const area = document.getElementById('chat-area');
-                area.innerHTML = "";
-                snap.forEach(c => {
-                    const m = c.val();
-                    area.innerHTML += `<div class="msg-bubble"><img src="${m.p}"><div class="msg-content"><b>${m.n}</b><br>${m.t}</div></div>`;
+        function loadMessages() {
+            db.collection("public-messages").orderBy("timestamp", "asc").onSnapshot(snap => {
+                const container = document.getElementById('messages');
+                container.innerHTML = "";
+                snap.forEach(doc => {
+                    const m = doc.data();
+                    container.innerHTML += `
+                        <div class="msg-container">
+                            <div class="msg-avatar" style="background: url('${m.photo}') center/cover"></div>
+                            <div class="msg-content">
+                                <span class="msg-user">${m.userName}</span>
+                                <span class="msg-text">${m.text}</span>
+                            </div>
+                        </div>
+                    `;
                 });
-                area.scrollTop = area.scrollHeight;
+                container.scrollTop = container.scrollHeight;
             });
-        }
-
-        function sendMsg() {
-            const i = document.getElementById('msg-in');
-            if(!i.value.trim()) return;
-            db.ref('public_chat').push({
-                n: currUser.displayName || "Member",
-                t: i.value,
-                p: currUser.photoURL || "https://cdn-icons-png.flaticon.com/512/149/149071.png",
-                ts: Date.now()
-            });
-            i.value = "";
         }
     </script>
 </body>
