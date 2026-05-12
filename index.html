@@ -260,6 +260,84 @@
             reader.readAsDataURL(file);
         }
     </script>
+    <div id="setup-popup" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:10000; display:flex; align-items:center; justify-content:center; padding:20px;">
+    <div style="background:white; padding:30px; border-radius:20px; width:100%; max-width:400px; text-align:center;">
+        <img src="https://i.ibb.co/KzF67sFZ/copilot-image-1761965106943.png" width="60" style="border-radius:50%;">
+        <h3 style="margin:15px 0;">Complete Your Profile</h3>
+        <p style="font-size:13px; color:#666; margin-bottom:20px;">Google se login successful! Bas ye details bhar do:</p>
+        <input type="tel" id="g-phone" placeholder="Phone Number" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;">
+        <input type="text" id="g-addr" placeholder="Address" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;">
+        <input type="password" id="g-pass" placeholder="Create Password" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;">
+        <input type="password" id="g-conf" placeholder="Confirm Password" style="width:100%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:8px;">
+        <button onclick="saveGoogleDetails()" style="width:100%; padding:14px; background:#5865F2; color:white; border:none; border-radius:8px; font-weight:bold;">Finish & Start Chat</button>
+    </div>
+</div>
+
+<style>
+    /* Chat Visibility Fix for Chrome/Google */
+    #chat-stream {
+        display: flex !important;
+        flex-direction: column !important;
+        height: calc(100vh - 180px) !important; /* Proper height for mobile */
+        overflow-y: scroll !important;
+        -webkit-overflow-scrolling: touch;
+        background: #ffffff !important;
+        padding-bottom: 20px;
+    }
+    .msg-bubble { background: #f0f2f5 !important; color: #1c1e21 !important; border-radius: 12px !important; margin: 5px 0; }
+    #core-app { display: none; height: 100vh; flex-direction: column; }
+</style>
+
+<script>
+    // Ye function check karega ki Google user ne details bhari hain ya nahi
+    function checkGoogleUser(user) {
+        const userRef = firebase.database().ref('users/' + user.uid);
+        userRef.once('value').then((snapshot) => {
+            if (!snapshot.exists() || !snapshot.val().phone) {
+                document.getElementById('setup-popup').style.display = 'flex';
+            } else {
+                document.getElementById('setup-popup').style.display = 'none';
+                launchApp();
+            }
+        });
+    }
+
+    function saveGoogleDetails() {
+        const ph = document.getElementById('g-phone').value;
+        const ad = document.getElementById('g-addr').value;
+        const ps = document.getElementById('g-pass').value;
+        const cf = document.getElementById('g-conf').value;
+
+        if(!ph || !ad || ps !== cf) return alert("Please fill all details & match passwords!");
+
+        firebase.database().ref('users/' + activeUser.uid).update({
+            phone: ph,
+            address: ad,
+            setupDone: true
+        }).then(() => {
+            document.getElementById('setup-popup').style.display = 'none';
+            alert("Welcome to CoreMMC!");
+            launchApp();
+        });
+    }
+
+    // Auth State Monitor with Google Sync
+    firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+            activeUser = user;
+            checkGoogleUser(user);
+        } else {
+            document.getElementById('auth-screen').style.display = 'flex';
+            document.getElementById('core-app').style.display = 'none';
+        }
+    });
+
+    // Google Login Trigger Fix
+    function googleFlow() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        firebase.auth().signInWithPopup(provider).catch(e => alert("Error: " + e.message));
+    }
+</script>
 </body>
 </html>
 
