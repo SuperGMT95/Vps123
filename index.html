@@ -3,156 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CoreMMC - Chat & Hosting</title>
+    <title>CoreMMC - Login & Register</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root {
-            --bg-dark: #313338;
-            --sidebar-dark: #2b2d31;
-            --nav-dark: #1e1f22;
-            --text-main: #dbdee1;
-            --accent: #5865f2;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: var(--bg-dark); color: var(--text-main); height: 100vh; overflow: hidden; }
-
-        /* Auth Screen */
-        #auth-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: url('https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExamJlOHR5Y2Fod2s0ZWg2MzNuZzZqZXJjdTloeTJjZ2hrcTNpeTZ0ayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/skzEY0OczUGwhamSxk/giphy.gif') center/cover;
-            display: flex; justify-content: center; align-items: center; z-index: 1000;
+        body {
+            background: url('https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExamJlOHR5Y2Fod2s0ZWg2MzNuZzZqZXJjdTloeTJjZ2hrcTNpeTZ0ayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/skzEY0OczUGwhamSxk/giphy.gif');
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
         }
 
-        .card {
-            background: rgba(43, 45, 49, 0.95); padding: 30px; border-radius: 8px;
-            width: 400px; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        .login-card {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            color: white;
+            max-height: 95vh;
+            overflow-y: auto;
+        }
+
+        /* Custom Scrollbar for the card */
+        .login-card::-webkit-scrollbar { width: 5px; }
+        .login-card::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
+
+        .logo {
+            width: 70px;
+            margin-bottom: 15px;
+            border-radius: 50%;
+            border: 2px solid #3b82f6;
+        }
+
+        h2 { font-size: 22px; margin-bottom: 5px; letter-spacing: 1px; }
+
+        .social-btn {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 600;
+            transition: 0.3s;
+            font-size: 14px;
+        }
+
+        .google-btn { background: white; color: #1e293b; }
+        .discord-btn { background: #5865F2; color: white; }
+
+        .divider {
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .divider::before, .divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #334155;
+            margin: 0 10px;
         }
 
         input {
-            width: 100%; padding: 10px; margin: 10px 0; background: #1e1f22;
-            border: 1px solid #1e1f22; color: white; border-radius: 4px;
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid #334155;
+            border-radius: 10px;
+            color: white;
+            outline: none;
+            font-size: 14px;
         }
 
-        .btn {
-            width: 100%; padding: 10px; border: none; border-radius: 4px;
-            cursor: pointer; font-weight: bold; transition: 0.2s; margin-top: 10px;
+        input:focus { border-color: #3b82f6; }
+
+        .main-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border: none;
+            color: white;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 15px;
+            transition: 0.3s;
         }
-        .btn-primary { background: var(--accent); color: white; }
-        .btn-google { background: white; color: black; margin-top: 15px; }
 
-        /* Main Chat Layout */
-        #app-interface { display: none; height: 100vh; grid-template-columns: 72px 240px 1fr; }
+        .main-btn:hover { opacity: 0.9; transform: scale(1.02); }
 
-        .server-bar { background: var(--nav-dark); display: flex; flex-direction: column; align-items: center; padding: 12px 0; }
-        .server-icon { width: 48px; height: 48px; background: #313338; border-radius: 50%; margin-bottom: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
-        .server-icon:hover { border-radius: 15px; background: var(--accent); }
+        .footer-text { margin-top: 15px; font-size: 13px; }
+        .footer-text span { color: #3b82f6; cursor: pointer; font-weight: bold; }
 
-        .sidebar { background: var(--sidebar-dark); display: flex; flex-direction: column; }
-        .sidebar-header { padding: 15px; font-weight: bold; border-bottom: 1px solid #232428; }
-        .channel-list { padding: 10px; flex-grow: 1; }
-        .channel-item { padding: 8px; border-radius: 4px; cursor: pointer; margin-bottom: 2px; color: #949ba4; }
-        .channel-item:hover, .active-ch { background: #3f4147; color: white; }
-
-        .chat-area { display: flex; flex-direction: column; background: var(--bg-dark); }
-        .chat-header { height: 48px; border-bottom: 1px solid #232428; display: flex; align-items: center; padding: 0 15px; font-weight: bold; }
-        #messages { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        
-        .msg-container { display: flex; gap: 15px; }
-        .msg-avatar { width: 40px; height: 40px; border-radius: 50%; background: #5865f2; }
-        .msg-content { display: flex; flex-direction: column; }
-        .msg-user { font-weight: bold; font-size: 0.9rem; color: white; }
-        .msg-text { font-size: 0.95rem; color: var(--text-main); margin-top: 2px; }
-
-        .input-box { padding: 20px; }
-        .input-wrapper { background: #383a40; padding: 10px 15px; border-radius: 8px; display: flex; }
-        .input-wrapper input { background: transparent; border: none; margin: 0; }
-
-        /* Profile Modal */
-        #profile-modal {
-            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: #1e1f22; width: 300px; border-radius: 15px; overflow: hidden; z-index: 2000;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
-        }
-        .banner { height: 60px; background: var(--accent); }
-        .profile-info { padding: 40px 15px 15px; position: relative; text-align: center; }
-        .p-avatar { width: 80px; height: 80px; border-radius: 50%; border: 6px solid #1e1f22; position: absolute; top: -40px; left: 15px; background: #5865f2;}
+        #register-form { display: none; }
     </style>
 </head>
 <body>
 
-    <div id="auth-screen">
-        <div class="card" id="login-form">
-            <h2>CoreMMC Hosting</h2>
-            <p style="color: #b5bac1; font-size: 14px; margin: 8px 0 20px;">Welcome back!</p>
-            <input type="email" id="email" placeholder="Email">
-            <input type="password" id="password" placeholder="Password">
-            <button class="btn btn-primary" onclick="login()">Login</button>
-            <button class="btn btn-google" onclick="googleLogin()">
-                <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="16"> Continue with Google
+    <div class="login-card">
+        <img src="https://i.ibb.co/KzF67sFZ/copilot-image-1761965106943.png" alt="CoreMMC" class="logo">
+        
+        <div id="login-form">
+            <h2>Welcome Back</h2>
+            <p style="margin-bottom:20px; color:#94a3b8; font-size: 14px;">Login to CoreMMC Hosting</p>
+
+            <button class="social-btn google-btn" onclick="googleAuth()">
+                <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="18"> Continue with Google
             </button>
-            <p style="margin-top: 15px; font-size: 13px;">Need an account? <span style="color: #00a8fc; cursor:pointer;" onclick="toggleAuth()">Register</span></p>
-        </div>
 
-        <div class="card" id="register-form" style="display:none;">
-            <h2>Create Account</h2>
-            <input type="text" id="reg-user" placeholder="Username">
-            <input type="email" id="reg-email" placeholder="Email">
-            <input type="password" id="reg-pass" placeholder="Password">
-            <button class="btn btn-primary" onclick="register()">Register</button>
-            <p style="margin-top: 15px; font-size: 13px;">Already have an account? <span style="color: #00a8fc; cursor:pointer;" onclick="toggleAuth()">Login</span></p>
-        </div>
-    </div>
+            <button class="social-btn discord-btn">
+                <i class="fab fa-discord"></i> Continue with Discord
+            </button>
 
-    <div id="app-interface">
-        <div class="server-bar">
-            <div class="server-icon"><i class="fab fa-discord fa-lg"></i></div>
-            <div style="width: 32px; height: 2px; background: #35363c; margin: 8px 0;"></div>
-            <div class="server-icon" style="border-radius: 15px; background: var(--accent);">C</div>
-        </div>
+            <div class="divider">OR</div>
 
-        <div class="sidebar">
-            <div class="sidebar-header">CoreMMC Hosting</div>
-            <div class="channel-list">
-                <div class="channel-item active-ch"><i class="fas fa-hashtag"></i> public-chat</div>
-                <div class="channel-item"><i class="fas fa-hashtag"></i> announcements</div>
-                <div style="margin-top: 20px; font-size: 12px; font-weight: bold; color: #949ba4; padding-left: 8px;">DIRECT MESSAGES</div>
-                <div class="channel-item"><i class="fas fa-user"></i> CoreMMC Bot</div>
-            </div>
-            <div style="background: #232428; padding: 10px; display: flex; align-items: center; gap: 10px; cursor:pointer;" onclick="showProfile()">
-                <div id="user-pfp" class="msg-avatar" style="width:32px; height:32px;"></div>
-                <div style="font-size: 13px;">
-                    <b id="user-display">User</b><br><span style="color:#b5bac1; font-size:11px;">#0001</span>
-                </div>
+            <input type="email" id="login-email" placeholder="Email Address">
+            <input type="password" id="login-pass" placeholder="Password">
+            
+            <button class="main-btn" onclick="emailLogin()">Log In</button>
+
+            <div class="footer-text">
+                Don't have an account? <span onclick="toggleForms('reg')">Create One</span>
             </div>
         </div>
 
-        <div class="chat-area">
-            <div class="chat-header"><i class="fas fa-hashtag" style="margin-right: 10px; color: #80848e;"></i> public-chat</div>
-            <div id="messages">
-                </div>
-            <div class="input-box">
-                <div class="input-wrapper">
-                    <input type="text" id="chat-input" placeholder="Message #public-chat" onkeypress="if(event.key === 'Enter') sendMessage()">
-                </div>
+        <div id="register-form">
+            <h2>Join CoreMMC</h2>
+            <p style="margin-bottom:20px; color:#94a3b8; font-size: 14px;">Create your hosting account</p>
+
+            <input type="text" id="reg-user" placeholder="Full Name">
+            <input type="email" id="reg-email" placeholder="Email Address">
+            <input type="tel" id="reg-phone" placeholder="Phone Number (Optional)">
+            <input type="text" id="reg-address" placeholder="Home Address (Optional)">
+            <input type="password" id="reg-pass" placeholder="Create Password">
+            <input type="password" id="reg-conf" placeholder="Confirm Password">
+            
+            <button class="main-btn" onclick="emailRegister()">Sign Up</button>
+
+            <div class="footer-text">
+                Already have an account? <span onclick="toggleForms('login')">Log In</span>
             </div>
         </div>
     </div>
 
-    <div id="profile-modal" onclick="this.style.display='none'">
-        <div class="banner"></div>
-        <div class="profile-info">
-            <div id="modal-pfp" class="p-avatar"></div>
-            <h3 id="modal-name">Username</h3>
-            <p style="color: #b5bac1; font-size: 12px;">CoreMMC Member</p>
-            <hr style="margin: 15px 0; border: 0; border-top: 1px solid #35363c;">
-            <button class="btn btn-primary" onclick="firebase.auth().signOut()">Logout</button>
-        </div>
-    </div>
-
-    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
 
     <script>
         const firebaseConfig = {
@@ -161,99 +181,75 @@
             projectId: "coremmc-hosting",
             storageBucket: "coremmc-hosting.firebasestorage.app",
             messagingSenderId: "483642646077",
-            appId: "1:483642646077:web:1e72697f704664e5af5454"
+            appId: "1:483642646077:web:1e72697f704664e5af5454",
+            databaseURL: "https://coremmc-chat-default-rtdb.firebaseio.com"
         };
 
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-        const db = firebase.firestore();
+        const db = firebase.database();
 
-        // --- Auth Logic ---
-        function toggleAuth() {
-            const login = document.getElementById('login-form');
-            const reg = document.getElementById('register-form');
-            login.style.display = login.style.display === 'none' ? 'block' : 'none';
-            reg.style.display = reg.style.display === 'none' ? 'block' : 'none';
+        // Switch between Login and Register
+        function toggleForms(type) {
+            if(type === 'reg') {
+                document.getElementById('login-form').style.display = 'none';
+                document.getElementById('register-form').style.display = 'block';
+            } else {
+                document.getElementById('login-form').style.display = 'block';
+                document.getElementById('register-form').style.display = 'none';
+            }
         }
 
-        async function register() {
+        // 1. Google Auth (With Data Sync)
+        function googleAuth() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).then((res) => {
+                alert("Welcome " + res.user.displayName);
+                // Check if user exists in DB, if not, wait for next step
+                window.location.href = "index.html"; 
+            }).catch(e => alert(e.message));
+        }
+
+        // 2. Email Register
+        function emailRegister() {
+            const name = document.getElementById('reg-user').value;
             const email = document.getElementById('reg-email').value;
             const pass = document.getElementById('reg-pass').value;
-            const user = document.getElementById('reg-user').value;
-            try {
-                const res = await auth.createUserWithEmailAndPassword(email, pass);
-                await res.user.updateProfile({ displayName: user });
-                location.reload();
-            } catch (e) { alert(e.message); }
-        }
+            const conf = document.getElementById('reg-conf').value;
+            const phone = document.getElementById('reg-phone').value;
+            const addr = document.getElementById('reg-address').value;
 
-        async function login() {
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('password').value;
-            try { await auth.signInWithEmailAndPassword(email, pass); } catch (e) { alert(e.message); }
-        }
+            if(!name || !email || !pass) return alert("Please fill mandatory fields!");
+            if(pass !== conf) return alert("Passwords do not match!");
 
-        function googleLogin() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider);
-        }
-
-        // --- App Logic ---
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                document.getElementById('auth-screen').style.display = 'none';
-                document.getElementById('app-interface').style.display = 'grid';
-                document.getElementById('user-display').innerText = user.displayName || user.email;
-                const pfp = user.photoURL || 'https://ui-avatars.com/api/?name=' + user.displayName;
-                document.getElementById('user-pfp').style.background = `url('${pfp}') center/cover`;
-                loadMessages();
-            } else {
-                document.getElementById('auth-screen').style.display = 'flex';
-                document.getElementById('app-interface').style.display = 'none';
-            }
-        });
-
-        function showProfile() {
-            const user = auth.currentUser;
-            const pfp = user.photoURL || 'https://ui-avatars.com/api/?name=' + user.displayName;
-            document.getElementById('modal-name').innerText = user.displayName;
-            document.getElementById('modal-pfp').style.background = `url('${pfp}') center/cover`;
-            document.getElementById('profile-modal').style.display = 'block';
-        }
-
-        async function sendMessage() {
-            const input = document.getElementById('chat-input');
-            if (!input.value.trim()) return;
-
-            await db.collection("public-messages").add({
-                text: input.value,
-                uid: auth.currentUser.uid,
-                userName: auth.currentUser.displayName,
-                photo: auth.currentUser.photoURL || 'https://ui-avatars.com/api/?name=' + auth.currentUser.displayName,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            input.value = "";
-        }
-
-        function loadMessages() {
-            db.collection("public-messages").orderBy("timestamp", "asc").onSnapshot(snap => {
-                const container = document.getElementById('messages');
-                container.innerHTML = "";
-                snap.forEach(doc => {
-                    const m = doc.data();
-                    container.innerHTML += `
-                        <div class="msg-container">
-                            <div class="msg-avatar" style="background: url('${m.photo}') center/cover"></div>
-                            <div class="msg-content">
-                                <span class="msg-user">${m.userName}</span>
-                                <span class="msg-text">${m.text}</span>
-                            </div>
-                        </div>
-                    `;
+            auth.createUserWithEmailAndPassword(email, pass).then((res) => {
+                // Save additional data to Database
+                db.ref('users/' + res.user.uid).set({
+                    username: name,
+                    email: email,
+                    phone: phone || "Not Provided",
+                    address: addr || "Not Provided",
+                    setupDone: true
+                }).then(() => {
+                    res.user.updateProfile({ displayName: name });
+                    alert("Account Created Successfully!");
+                    // Abhi hum kahin redirect nahi karenge jab tak aap agla step na bolo
                 });
-                container.scrollTop = container.scrollHeight;
-            });
+            }).catch(e => alert(e.message));
+        }
+
+        // 3. Email Login
+        function emailLogin() {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+            if(!email || !pass) return alert("Fill details!");
+            
+            auth.signInWithEmailAndPassword(email, pass).then(() => {
+                alert("Logged in!");
+                window.location.href = "index.html";
+            }).catch(e => alert(e.message));
         }
     </script>
 </body>
 </html>
+
