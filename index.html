@@ -481,62 +481,6 @@
     </nav>
 </div>
 
-<script>
-    // Tab switching logic
-    function showTab(tabId, element) {
-        // Hide all pages
-        document.querySelectorAll('.app-page').forEach(p => p.classList.remove('active'));
-        // Remove active class from all nav items
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        
-        // Show selected page and set nav active
-        document.getElementById('page-' + tabId).classList.add('active');
-        element.classList.add('active');
-    }
-
-    // Auth listener updated to show the interface
-    auth.onAuthStateChanged(user => {
-        const appUI = document.getElementById('core-app-interface');
-        const loginUI = document.querySelector('.login-card');
-        
-        if (user) {
-            appUI.style.display = 'block';
-            if(loginUI) loginUI.style.display = 'none';
-            document.getElementById('user-display-name').innerText = user.displayName || "Core Member";
-            document.getElementById('user-pfp').src = user.photoURL || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
-            syncChat();
-        } else {
-            appUI.style.display = 'none';
-            if(loginUI) loginUI.style.display = 'block';
-        }
-    });
-
-    // Simple Real-time Chat Sync
-    function syncChat() {
-        db.ref('public_chat').limitToLast(20).on('value', snap => {
-            const box = document.getElementById('public-messages');
-            box.innerHTML = "";
-            snap.forEach(m => {
-                const data = m.val();
-                box.innerHTML += `<div style="background: white; padding: 10px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                    <small style="color: #3b82f6; font-weight: bold;">${data.name}</small><br>${data.text}
-                </div>`;
-            });
-            box.scrollTop = box.scrollHeight;
-        });
-    }
-
-    function sendMsg() {
-        const input = document.getElementById('p-msg');
-        if(!input.value.trim()) return;
-        db.ref('public_chat').push({
-            name: auth.currentUser.displayName || "Member",
-            text: input.value,
-            uid: auth.currentUser.uid,
-            time: Date.now()
-        });
-        input.value = "";
-    }
 </script>
     <style>
     /* Navigation Bar Styling - Adjusted for Mobile View */
