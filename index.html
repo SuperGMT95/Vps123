@@ -260,127 +260,129 @@
             reader.readAsDataURL(file);
         }
     </script>
-    <div id="google-setup-layer" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:999999; overflow-y:auto; padding:20px; align-items:center; justify-content:center;">
-    <div style="background:white; width:100%; max-width:420px; padding:30px; border-radius:25px; text-align:center; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
-        <img src="https://i.ibb.co/KzF67sFZ/copilot-image-1761965106943.png" width="70" style="border-radius:50%; border:3px solid #5865F2;">
-        <h2 style="color:#313338; margin:15px 0 5px;">Complete Registration</h2>
-        <p style="color:#666; font-size:14px; margin-bottom:20px;">Google se login ho gaya hai! Ab CoreMMC ke liye baaki details bharein (Gmail automatic le li gayi hai).</p>
+        <div id="core-setup-popup" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:999999; overflow-y:auto; padding:20px; align-items:center; justify-content:center; backdrop-filter: blur(5px);">
+    <div style="background:white; width:100%; max-width:450px; border-radius:24px; overflow:hidden; position:relative; box-shadow:0 20px 50px rgba(0,0,0,0.3);">
         
-        <div style="text-align:left; margin-bottom:15px;">
-            <label style="font-size:12px; font-weight:bold; color:#5865F2;">PHONE NUMBER</label>
-            <input type="tel" id="patch-phone" placeholder="+91..." style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; margin-top:5px;">
-        </div>
-        
-        <div style="text-align:left; margin-bottom:15px;">
-            <label style="font-size:12px; font-weight:bold; color:#5865F2;">ADDRESS</label>
-            <input type="text" id="patch-addr" placeholder="City, Country" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; margin-top:5px;">
-        </div>
-
-        <div style="text-align:left; margin-bottom:15px;">
-            <label style="font-size:12px; font-weight:bold; color:#5865F2;">CREATE HUB PASSWORD</label>
-            <input type="password" id="patch-pass" placeholder="••••••••" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; margin-top:5px;">
+        <div id="pop-banner-prev" style="height:120px; background:#5865F2; position:relative;">
+            <label for="banner-upload" style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.5); color:white; padding:5px 10px; border-radius:15px; font-size:12px; cursor:pointer;"><i class="fas fa-camera"></i> Edit Banner</label>
+            <input type="file" id="banner-upload" hidden onchange="previewImg(this, 'pop-banner-prev', true)">
+            
+            <div style="position:absolute; bottom:-40px; left:20px;">
+                <img id="pop-pfp-prev" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width:85px; height:85px; border-radius:50%; border:4px solid white; background:#eee; object-fit:cover;">
+                <label for="pfp-upload" style="position:absolute; bottom:0; right:0; background:white; padding:5px; border-radius:50%; box-shadow:0 2px 5px rgba(0,0,0,0.2); cursor:pointer;"><i class="fas fa-pen" style="font-size:10px;"></i></label>
+                <input type="file" id="pfp-upload" hidden onchange="previewImg(this, 'pop-pfp-prev', false)">
+            </div>
         </div>
 
-        <div style="text-align:left; margin-bottom:20px;">
-            <label style="font-size:12px; font-weight:bold; color:#5865F2;">CONFIRM PASSWORD</label>
-            <input type="password" id="patch-conf" placeholder="••••••••" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; margin-top:5px;">
-        </div>
+        <div style="padding:50px 25px 25px;">
+            <h3 style="margin-bottom:15px; color:#313338;">Set Up Your CoreMMC Profile</h3>
+            
+            <input type="text" id="setup-username" placeholder="Choose Username" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; margin-bottom:12px;">
+            
+            <input type="tel" id="setup-phone" placeholder="Phone Number" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; margin-bottom:12px;">
+            <input type="text" id="setup-address" placeholder="Address (Optional)" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; margin-bottom:12px;">
+            
+            <div id="google-pass-fields">
+                <input type="password" id="setup-pass" placeholder="Create Hub Password" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; margin-bottom:12px;">
+                <input type="password" id="setup-conf" placeholder="Confirm Password" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; margin-bottom:20px;">
+            </div>
 
-        <button onclick="finalSubmitGoogleData()" style="width:100%; padding:15px; background:#5865F2; color:white; border:none; border-radius:12px; font-weight:bold; font-size:16px; cursor:pointer;">Verify & Enter Chat</button>
+            <button onclick="saveFinalProfile()" style="width:100%; padding:15px; background:#5865F2; color:white; border:none; border-radius:12px; font-weight:bold; cursor:pointer; font-size:16px;">Save & Start Chatting</button>
+        </div>
     </div>
 </div>
 
 <style>
-    /* Chrome & Google App Visibility Fix */
+    /* Black Screen Fix */
+    body, html { background: #ffffff !important; }
     #core-app, #app { 
-        display: none !important; 
+        display: none; 
+        background: white !important; 
         height: 100vh !important; 
-        width: 100vw !important; 
         position: fixed !important; 
-        top: 0; left: 0; 
-        background: white !important;
-        z-index: 5000;
+        width: 100% !important;
+        top: 0; left: 0;
+        z-index: 1000;
     }
     
-    #chat-stream, #chat-area, #chat-flow {
+    /* App showing logic */
+    .show-app { display: flex !important; }
+    
+    /* Chat Visibility */
+    #chat-stream, #chat-area {
+        flex: 1 !important;
+        overflow-y: auto !important;
+        background: white !important;
         display: flex !important;
         flex-direction: column !important;
-        height: calc(100vh - 140px) !important; /* Bottom nav aur header ki jagah chhod kar */
-        overflow-y: auto !important;
-        background: #ffffff !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-    }
-
-    .section { width: 100% !important; height: 100% !important; }
-    .section.active { display: flex !important; visibility: visible !important; }
-
-    /* Fix for messages not showing */
-    .msg-container, .message-bubble, .chat-msg {
-        display: flex !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        margin-bottom: 12px !important;
+        padding-bottom: 80px !important;
     }
 </style>
 
 <script>
-    // 1. Forced Check for Google Users
-    function enforceRegistration(user) {
-        const dbRef = firebase.database().ref('users/' + user.uid);
-        dbRef.once('value').then((snap) => {
-            const data = snap.val();
-            // Agar phone ya password database mein nahi hai, toh form dikhao
-            if (!data || !data.phone || !data.setupDone) {
-                document.getElementById('google-setup-layer').style.display = 'flex';
-                document.getElementById('core-app').style.display = 'none';
-                if(document.getElementById('app')) document.getElementById('app').style.display = 'none';
-            } else {
-                document.getElementById('google-setup-layer').style.display = 'none';
-                document.getElementById('core-app').style.display = 'flex';
-                if(document.getElementById('app')) document.getElementById('app').style.display = 'flex';
-                // Trigger your existing loadChat() or initHub()
-                if(typeof startChatSync === "function") startChatSync();
-                if(typeof loadChat === "function") loadChat();
+    // 1. Unified Image Preview
+    function previewImg(input, targetId, isBanner) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                if(isBanner) document.getElementById(targetId).style.backgroundImage = `url(${e.target.result})`;
+                else document.getElementById(targetId).src = e.target.result;
             }
-        });
+            reader.readAsDataURL(input.files[0]);
+        }
     }
 
-    // 2. Submit Google Extra Data
-    function finalSubmitGoogleData() {
-        const ph = document.getElementById('patch-phone').value;
-        const ad = document.getElementById('patch-addr').value;
-        const ps = document.getElementById('patch-pass').value;
-        const cf = document.getElementById('patch-conf').value;
+    // 2. Save Profile & Meta Data
+    function saveFinalProfile() {
+        const user = firebase.auth().currentUser;
+        const name = document.getElementById('setup-username').value;
+        const phone = document.getElementById('setup-phone').value;
+        const addr = document.getElementById('setup-address').value;
+        const pass = document.getElementById('setup-pass').value;
 
-        if(!ph || !ad || ps.length < 6) return alert("Please fill all details! Password min 6 chars.");
-        if(ps !== cf) return alert("Passwords do not match!");
+        if(!name || !phone) return alert("Username and Phone are required!");
 
-        firebase.database().ref('users/' + firebase.auth().currentUser.uid).update({
-            phone: ph,
-            address: ad,
+        firebase.database().ref('users/' + user.uid).update({
+            username: name,
+            phone: phone,
+            address: addr,
             setupDone: true,
-            email: firebase.auth().currentUser.email
+            email: user.email
         }).then(() => {
-            alert("CoreMMC Account Activated!");
-            location.reload(); // Reload to apply all changes
+            user.updateProfile({ displayName: name });
+            alert("CoreMMC Profile Updated!");
+            document.getElementById('core-setup-popup').style.display = 'none';
+            launchCoreApp();
         });
     }
 
-    // 3. Override existing Auth Listener
-    firebase.auth().onAuthStateChanged(user => {
-        if (user) {
-            enforceRegistration(user);
+    // 3. Auth Check & Redirect
+    firebase.auth().onAuthStateChanged(u => {
+        if(u) {
+            firebase.database().ref('users/' + u.uid).once('value', snap => {
+                const d = snap.val();
+                if(!d || !d.setupDone) {
+                    document.getElementById('core-setup-popup').style.display = 'flex';
+                    document.getElementById('auth-screen').style.display = 'none';
+                } else {
+                    launchCoreApp();
+                }
+            });
         } else {
             document.getElementById('auth-screen').style.display = 'flex';
-            document.getElementById('google-setup-layer').style.display = 'none';
+            document.getElementById('core-app').classList.remove('show-app');
         }
     });
 
-    // Chrome Scroll Fix
-    window.onload = function() {
-        window.scrollTo(0, 1);
-    };
+    function launchCoreApp() {
+        const app = document.getElementById('core-app') || document.getElementById('app');
+        if(app) {
+            app.classList.add('show-app');
+            document.getElementById('auth-screen').style.display = 'none';
+            // Trigger chat load
+            if(typeof startChatSync === "function") startChatSync();
+        }
+    }
 </script>
 </body>
 </html>
