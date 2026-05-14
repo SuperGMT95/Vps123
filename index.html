@@ -615,6 +615,222 @@
     </nav>
 </div>
 </script>
+    ==========================================
+     COREMMC APP INTERFACE - FULLY RESPONSIVE
+     ========================================== -->
+<style>
+    /* 1. Reset & Base Layout */
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    #core-app-interface {
+        display: none; /* JS will change this to 'flex' */
+        flex-direction: column;
+        height: 100vh; /* Full screen height */
+        width: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background: #f8fafc;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* 2. Scrollable Content Area */
+    .app-page {
+        flex: 1;
+        overflow-y: auto;
+        width: 100%;
+        display: none;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 20px;
+    }
+
+    .app-page.active {
+        display: block;
+    }
+
+    /* 3. Chat Footer (Fixed above Bottom Nav) */
+    .chat-footer {
+        width: 100%;
+        background: white;
+        padding: 10px 15px;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    #p-msg {
+        flex: 1;
+        padding: 12px 18px;
+        border-radius: 25px;
+        border: 1px solid #e2e8f0;
+        outline: none;
+        font-size: 14px;
+        background: #f1f5f9;
+    }
+
+    .send-btn {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+    }
+
+    /* 4. Bottom Navigation Bar */
+    .bottom-nav {
+        width: 100%;
+        height: 70px;
+        background: #ffffff;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        border-top: 1px solid #e2e8f0;
+        box-shadow: 0 -5px 15px rgba(0,0,0,0.05);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .nav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #94a3b8;
+        cursor: pointer;
+        transition: 0.3s;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .nav-item i {
+        font-size: 20px;
+        margin-bottom: 4px;
+    }
+
+    .nav-item.active {
+        color: #3b82f6;
+    }
+
+    /* Profile Specific Styling */
+    .profile-card {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        text-align: center;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        margin: 20px;
+    }
+</style>
+
+<div id="core-app-interface">
+    
+    <!-- PAGE 1: PUBLIC CHAT -->
+    <div id="page-public" class="app-page active">
+        <div id="public-messages" style="padding: 15px; display: flex; flex-direction: column; gap: 12px; min-height: 100%;">
+            <!-- Messages will load here -->
+        </div>
+    </div>
+
+    <!-- PAGE 2: DMS -->
+    <div id="page-dm" class="app-page">
+        <div style="padding: 60px 20px; text-align: center;">
+            <div style="width: 80px; height: 80px; background: #e0e7ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                <i class="fas fa-shield-alt" style="font-size: 35px; color: #3b82f6;"></i>
+            </div>
+            <h3 style="color: #1e293b;">Private DMs</h3>
+            <p style="color: #64748b; font-size: 14px;">Direct support and private chats will appear here soon.</p>
+        </div>
+    </div>
+
+    <!-- PAGE 3: PROFILE -->
+    <div id="page-profile" class="app-page">
+        <div class="profile-card">
+            <div style="position: relative; display: inline-block;">
+                <img id="user-pfp" src="" style="width: 90px; height: 90px; border-radius: 50%; border: 3px solid #3b82f6; object-fit: cover;">
+                <div style="position: absolute; bottom: 5px; right: 5px; width: 15px; height: 15px; background: #22c55e; border: 2px solid white; border-radius: 50%;"></div>
+            </div>
+            <h2 id="user-display-name" style="margin-top: 15px; color: #1e293b; font-size: 20px;">Loading...</h2>
+            <p style="color: #64748b; font-size: 13px;">CoreMMC Verified Member</p>
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #f1f5f9;">
+            <button onclick="auth.signOut()" style="width: 100%; padding: 14px; background: #fee2e2; color: #ef4444; border: none; border-radius: 12px; font-weight: 700; cursor: pointer;">
+                <i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i> Logout Account
+            </button>
+        </div>
+    </div>
+
+    <!-- CHAT INPUT AREA (Only visible on Public Page logic handled by JS) -->
+    <div class="chat-footer" id="input-container">
+        <input type="text" id="p-msg" placeholder="Type a message..." onkeypress="if(event.key==='Enter')sendMsg()">
+        <button class="send-btn" onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="showTab('public', this)">
+            <i class="fas fa-comments"></i>
+            <span>Public</span>
+        </div>
+        <div class="nav-item" onclick="showTab('dm', this)">
+            <i class="fas fa-user-friends"></i>
+            <span>DMs</span>
+        </div>
+        <div class="nav-item" onclick="showTab('profile', this)">
+            <i class="fas fa-user-cog"></i>
+            <span>Profile</span>
+        </div>
+    </nav>
+</div>
+
+<script>
+    // Tab Switching Logic
+    function showTab(tabName, element) {
+        // Hide all pages
+        document.querySelectorAll('.app-page').forEach(p => p.style.display = 'none');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        
+        // Show selected page
+        document.getElementById('page-' + tabName).style.display = 'block';
+        element.classList.add('active');
+
+        // Hide input bar if not on public chat
+        const inputContainer = document.getElementById('input-container');
+        if(tabName === 'public') {
+            inputContainer.style.display = 'flex';
+        } else {
+            inputContainer.style.display = 'none';
+        }
+    }
+
+    // Firebase Auth Integration
+    auth.onAuthStateChanged(user => {
+        const appUI = document.getElementById('core-app-interface');
+        const loginUI = document.getElementById('login-section'); // Aapke login div ki ID check karein
+
+        if (user) {
+            appUI.style.display = 'flex'; 
+            if(loginUI) loginUI.style.display = 'none';
+
+            document.getElementById('user-display-name').innerText = user.displayName || "Core Member";
+            document.getElementById('user-pfp').src = user.photoURL || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+            
+            if(typeof syncChat === "function") syncChat(); 
+        } else {
+            appUI.style.display = 'none';
+            if(loginUI) loginUI.style.display = 'block';
+        }
+    });
+</script>
 </body>
 </html>
 
