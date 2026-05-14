@@ -572,6 +572,40 @@
         justify-content: center;
         box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
     }
+        /* Purane #core-app-interface, .app-page aur .bottom-nav ko isse badal do */
+
+#core-app-interface {
+    display: none; 
+    flex-direction: column; /* Sab kuch ek ke niche ek rahega */
+    height: 100vh; /* Full mobile screen */
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: #f8fafc;
+}
+
+.app-page {
+    flex: 1; /* Ye saari khali jagah le lega, isse bottom nav niche push ho jayega */
+    overflow-y: auto; /* Sirf isi area mein scroll hoga */
+    width: 100%;
+    display: none;
+}
+
+.app-page.active {
+    display: block;
+}
+
+.bottom-nav {
+    width: 100%;
+    height: 70px; /* Iska size fix rakho */
+    background: #ffffff;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-top: 1px solid #e2e8f0;
+    padding-bottom: env(safe-area-inset-bottom); /* Mobile notch fix */
+}
 </style>
 
 <div id="core-app-interface" style="display:none;">
@@ -629,6 +663,33 @@
         </div>
     </nav>
 </div>
+</script>
+    // Isko apne existing <script> tag ke andar purane auth listener ki jagah paste karein
+auth.onAuthStateChanged(user => {
+    const appUI = document.getElementById('core-app-interface');
+    
+    // Login UI ko select karne ke liye (agar aapne use 'login-card' class di hai)
+    const loginUI = document.querySelector('.login-card') || document.getElementById('login-section');
+
+    if (user) {
+        // 1. App interface ko 'flex' display dena hai taaki layout sahi rahe
+        appUI.style.display = 'flex'; 
+        
+        // 2. Login screen ko chhupana hai
+        if(loginUI) loginUI.style.display = 'none';
+
+        // 3. User ka data update karna
+        document.getElementById('user-display-name').innerText = user.displayName || "Core Member";
+        document.getElementById('user-pfp').src = user.photoURL || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+        
+        // 4. Chat load karna
+        syncChat(); 
+    } else {
+        // Logout hone par interface chhupao aur login dikhao
+        appUI.style.display = 'none';
+        if(loginUI) loginUI.style.display = 'block';
+    }
+});
 </script>
 </body>
 </html>
