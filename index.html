@@ -664,33 +664,6 @@
     </nav>
 </div>
 </script>
-    // Isko apne existing <script> tag ke andar purane auth listener ki jagah paste karein
-auth.onAuthStateChanged(user => {
-    const appUI = document.getElementById('core-app-interface');
-    
-    // Login UI ko select karne ke liye (agar aapne use 'login-card' class di hai)
-    const loginUI = document.querySelector('.login-card') || document.getElementById('login-section');
-
-    if (user) {
-        // 1. App interface ko 'flex' display dena hai taaki layout sahi rahe
-        appUI.style.display = 'flex'; 
-        
-        // 2. Login screen ko chhupana hai
-        if(loginUI) loginUI.style.display = 'none';
-
-        // 3. User ka data update karna
-        document.getElementById('user-display-name').innerText = user.displayName || "Core Member";
-        document.getElementById('user-pfp').src = user.photoURL || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
-        
-        // 4. Chat load karna
-        syncChat(); 
-    } else {
-        // Logout hone par interface chhupao aur login dikhao
-        appUI.style.display = 'none';
-        if(loginUI) loginUI.style.display = 'block';
-    }
-});
-</script>
 </body>
 </html>
 
