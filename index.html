@@ -831,6 +831,200 @@
         }
     });
 </script>
+    <aside class="desktop-sidebar bottom-nav">
+    <div class="sidebar-nav-item nav-item active" onclick="showTab('public', this)">
+        <i class="fas fa-comments"></i>
+        <span>Public Chat</span>
+    </div>
+    <div class="sidebar-nav-item nav-item" onclick="showTab('dm', this)">
+        <i class="fas fa-user-friends"></i>
+        <span>Private DMs</span>
+    </div>
+    <div class="sidebar-nav-item nav-item" onclick="showTab('profile', this)">
+        <i class="fas fa-user-cog"></i>
+        <span>Profile Settings</span>
+    </div>
+</aside>
+
+<nav class="bottom-nav">
+    <div class="nav-item active" onclick="showTab('public', this)">
+        <i class="fas fa-comments"></i>
+        <span>Public</span>
+    </div>
+    <div class="nav-item" onclick="showTab('dm', this)">
+        <i class="fas fa-user-friends"></i>
+        <span>DMs</span>
+    </div>
+    <div class="nav-item" onclick="showTab('profile', this)">
+        <i class="fas fa-user-cog"></i>
+        <span>Profile</span>
+    </div>
+</nav>
+
+<script>
+    // Global configurations for authenticated sessions
+    let currentUserName = "Core Member";
+    let currentUserPfp = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+    // 1. Responsive Navigation System
+    function showTab(tabName, element) {
+        const pages = document.querySelectorAll('.app-page');
+        const navItems = document.querySelectorAll('.nav-item');
+        
+        pages.forEach(p => p.classList.remove('active'));
+        navItems.forEach(n => n.classList.remove('active'));
+        
+        document.getElementById('page-' + tabName).classList.add('active');
+        
+        if (element.parentElement.classList.contains('bottom-nav')) {
+             const sidebar = document.querySelector('.desktop-sidebar');
+             if(sidebar) {
+                const targetSidebarItem = sidebar.querySelector(`[onclick*='${tabName}']`);
+                if(targetSidebarItem) targetSidebarItem.classList.add('active');
+             }
+             element.classList.add('active');
+        } else {
+             const bottomNav = document.querySelector('nav.bottom-nav');
+             if(bottomNav) {
+                const targetBottomNavItem = bottomNav.querySelector(`[onclick*='${tabName}']`);
+                if(targetBottomNavItem) targetBottomNavItem.classList.add('active');
+             }
+             element.classList.add('active');
+        }
+
+        const inputContainer = document.getElementById('input-container');
+        if(tabName === 'public') {
+            inputContainer.style.display = 'flex';
+        } else {
+            inputContainer.style.display = 'none';
+        }
+        
+        const currentPage = document.getElementById('page-' + tabName);
+        currentPage.scrollTop = currentPage.scrollHeight;
+    }
+
+    // 2. Database Real-Time Stream Engine
+    const publicMessagesArea = document.getElementById('public-messages');
+
+    function syncFirebaseMessages() {
+        // Firebase snapshot query loop listener
+        db.ref('messages').on('child_added', (snapshot) => {
+            const data = snapshot.val();
+            const messageId = snapshot.key;
+            
+            const isMe = data.username === currentUserName;
+            const bubbleClass = isMe ? 'me' : 'other';
+            
+            // Layout nodes matching explicit dark styling fixes
+            const messageHtml = `
+                <div class="message-bubble ${bubbleClass}" id="msg-${messageId}">
+                    <img src="${data.pfp || currentUserPfp}" class="user-avatar" alt="User PFP">
+                    <div class="message-content">
+                        <span class="user-name">${data.username}</span>
+                        <span class="msg-text">${data.message}</span>
+                        <div class="message-options">
+                            <button class="opt-btn" title="Copy" onclick="copyMessage('${messageId}')"><i class="fas fa-copy"></i></button>
+                            <button class="opt-btn" title="Forward" onclick="forwardMessage('${messageId}')"><i class="fas fa-share"></i></button>
+                            ${isMe ? `<button class="opt-btn del-btn" title="Delete" onclick="deleteMessage('${messageId}')"><i class="fas fa-trash-alt"></i></button>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            publicMessagesArea.insertAdjacentHTML('beforeend', messageHtml);
+            publicMessagesArea.scrollTop = publicMessagesArea.scrollHeight;
+        });
+
+        // Sync local DOM nodes if data node gets dropped from Firebase database dashboard
+        db.ref('messages').on('child_removed', (snapshot) => {
+            const removedElement = document.getElementById(`msg-${snapshot.key}`);
+            if(removedElement) removedElement.remove();
+        });
+    }
+
+    // Function stream pushing raw input string directly to remote JSON node
+    function sendMessage() {
+        const msgInput = document.getElementById('p-msg');
+        const text = msgInput.value.trim();
+        
+        if(text === '') return;
+        
+        db.ref('messages').push({
+            username: currentUserName,
+            pfp: currentUserPfp,
+            message: text,
+            timestamp: Date.now()
+        });
+        
+        msgInput.value = '';
+        msgInput.focus();
+    }
+
+    // 3. Option Handlers (Copy, Delete, Forward Inputs)
+    document.addEventListener('click', function(e) {
+        // Fallback for click events if inline trigger hooks overlap structures
+    });
+
+    function deleteMessage(messageId) {
+        if (confirm("CoreMMC: Realtime database node wipe alert! Delete permanently?")) {
+            db.ref(`messages/${messageId}`).remove()
+            .then(() => alert("Message sync wiped!"))
+            .catch(err => console.error("Firebase write execution dropped:", err));
+        }
+    }
+    
+    function copyMessage(messageId) {
+        const textElement = document.querySelector(`#msg-${messageId} .msg-text`);
+        if(textElement) {
+            navigator.clipboard.writeText(textElement.innerText).then(() => {
+                alert("CoreMMC: Text content loaded into clipboard!");
+            });
+        }
+    }
+
+    function forwardMessage(messageId) {
+        const textElement = document.querySelector(`#msg-${messageId} .msg-text`);
+        if(textElement) {
+            const forwardText = textElement.innerText;
+            const msgInput = document.getElementById('p-msg');
+            msgInput.value = `[Forwarded]: ${forwardText}`;
+            msgInput.focus();
+            alert("Payload loaded to target entry! Press send icon to push stream.");
+        }
+    }
+
+    // 4. Session Context Engine (Firebase Auth Global Check)
+    auth.onAuthStateChanged(user => {
+        const appUI = document.getElementById('core-app-interface');
+        const loginUI = document.getElementById('login-section');
+
+        if (user) {
+            if(appUI) appUI.style.display = 'flex'; 
+            if(loginUI) loginUI.style.display = 'none';
+
+            currentUserName = user.displayName || "Core Member";
+            currentUserPfp = user.photoURL || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+            const nameCard = document.getElementById('user-display-name');
+            const avatarCard = document.getElementById('user-pfp');
+            
+            if(nameCard) nameCard.innerText = currentUserName;
+            if(avatarCard) avatarCard.src = currentUserPfp;
+            
+            if(publicMessagesArea) {
+                publicMessagesArea.innerHTML = '';
+                syncFirebaseMessages();
+            }
+        } else {
+            if(appUI) appUI.style.display = 'none';
+            if(loginUI) loginUI.style.display = 'block';
+        }
+    });
+
+    window.addEventListener('load', () => {
+        window.scrollTo(0, 1);
+    });
+</script>
 </body>
 </html>
 
